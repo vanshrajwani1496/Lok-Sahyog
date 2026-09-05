@@ -1,0 +1,11 @@
+path: c:/SIH MODEL/RDD_Combined
+train: images/train
+val: images/val
+
+names:
+  0: 'longitudinal crack'
+  1: 'transverse crack'
+  2: 'alligator crack'
+  3: 'Potholes'
+  4: 'waterlogging'
+  5: 'damaged sign'

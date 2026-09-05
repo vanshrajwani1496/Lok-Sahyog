@@ -1,0 +1,25 @@
+# Python / Virtual Environments
+venv/
+__pycache__/
+*.pyc
+.env
+
+# Heavy YOLO Model Weights (Too large for Git)
+weights/
+*.pt
+runs/
+
+# Datasets (Users must generate their own)
+RDD_Combined/
+RDD_D40_Only/
+New_Datasets/
+
+# JS / React Build Files
+node_modules/
+.next/
+build/
+dist/
+
+# IDE
+.vscode/
+.idea/
