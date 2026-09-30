@@ -48,9 +48,9 @@ export const TYPE_LABEL: Record<DetectionType, string> = {
   pedestrian_risk: "Pedestrian Risk",
   rash_driving: "Rash Driving",
   incident_vehicle: "Incident Vehicle",
+  vehicle: "Vehicle (Tracked)",
+  motorcycle: "Motorcycle"
 };
-
-export const ROUTES = ["8A (Secunderabad - Chandrayangutta)", "10K (Secunderabad - Sanath Nagar)", "5K (Mehdipatnam - Secunderabad)", "218 (Patancheru - Dilsukhnagar)", "49M (Secunderabad - Mehdipatnam)", "127K (Koti - Kondapur)"];
 
 /* ------------------------------------------------------------------ */
 /* Deterministic pseudo-random so SSR and client agree on initial data */
@@ -94,24 +94,45 @@ export function buildZones(): Zone[] {
   });
 }
 
-export function buildBuses(): Bus[] {
+export function buildBuses(cityId: string = "HYD", centerPt: { lat: number, lng: number } = { lat: 17.3850, lng: 78.4867 }): Bus[] {
   const rng = makeRng(7);
-  const ids = ["042", "017", "021", "088", "104", "156", "203", "231", "277", "312", "334", "401"];
-  const buses = ids.map((id, i) => {
-    const status: Bus["status"] = i === 9 ? "offline" : i === 6 || i === 11 ? "warning" : "online";
-    const lat = CITY_CENTER.lat + (rng() - 0.5) * 0.03;
-    const lng = CITY_CENTER.lng + (rng() - 0.5) * 0.03;
+
+  let prefix = "TSRTC";
+  let rtcRoutes = ["8A (Secunderabad - Chandrayangutta)", "10K (Secunderabad - Sanath Nagar)", "5K (Mehdipatnam - Secunderabad)", "218 (Patancheru - Dilsukhnagar)", "49M (Secunderabad - Mehdipatnam)", "127K (Koti - Kondapur)"];
+  if (cityId === "MUM") {
+    prefix = "BEST";
+    rtcRoutes = ["1L (Colaba - Bandra)", "22L (Andheri - Juhu)", "112 (Gateway - Worli)", "33 (Goregaon - Dadar)", "8L (Sion - BKC)", "9 (Malabar - Marine)"];
+  } else if (cityId === "BLR") {
+    prefix = "BMTC";
+    rtcRoutes = ["V-335E (KBS - Kadugodi)", "500-D (Silk Board - Hebbal)", "201 (Srinagar - Domlur)", "G-4 (Brigade - Bannerghatta)", "258 (Malleswaram - Peenya)", "KIA-8 (Elec City - Airport)"];
+  } else if (cityId === "DEL") {
+    prefix = "DTC";
+    rtcRoutes = ["101 (Connaught - Vasant)", "320 (ISBT - Shahdara)", "440 (Okhla - Nehru)", "212 (Anand Vihar - Laxmi)", "615 (Moti Bagh - Parliament)", "410 (Karol Bagh - Rajouri)"];
+  } else if (cityId === "PUN") {
+    prefix = "PMPML";
+    rtcRoutes = ["120 (Koregaon - Swargate)", "144 (Shivajinagar - Deccan)", "312 (Hinjewadi - Pune Station)", "2 (Kothrud - Kothrud)", "9 (Camp - Yerawada)", "11 (Aundh - Baner)"];
+  } else if (cityId === "CHE") {
+    prefix = "MTC";
+    rtcRoutes = ["11G (T Nagar - Broadway)", "21G (Tambaram - Guindy)", "A1 (Adyar - Central)", "M21C (Velachery - Taramani)", "PP21 (Anna Nagar - Egmore)", "M15 (Saidapet - Airport)"];
+  }
+
+  const ids = ["49", "8A", "218", "10K", "5K", "127K", "9X", "1", "47L", "277D", "15H", "18C"];
+  const buses: Bus[] = ids.map((id, i) => {
+    // Force all local test buses offline to emphasize the admin's live 'ME' edge node setup
+    const status: Bus["status"] = "offline";
+    const lat = centerPt.lat + (rng() - 0.5) * 0.03;
+    const lng = centerPt.lng + (rng() - 0.5) * 0.03;
     return {
-      id: `BUS-${id}`,
-      route: ROUTES[i % ROUTES.length]!,
+      id: `${prefix}-${id}`,
+      route: Object.values(rtcRoutes)[i % rtcRoutes.length]!,
       status,
-      speed: status === "offline" ? 0 : Math.round(18 + rng() * 34),
+      speed: 0,
       lat,
       lng,
-      gps: status !== "offline",
-      camera: status === "online",
-      ai: status === "online",
-      fps: status === "online" ? 28 + Math.round(rng() * 8) : 0,
+      gps: false,
+      camera: false,
+      ai: false,
+      fps: 0,
       detections: Math.round(rng() * 16),
       driver: ["R. Kumar", "S. Reddy", "A. Fatima", "M. Rao", "P. Singh", "V. Nair"][i % 6]!,
       trail: Array.from({ length: 8 }, (_, k) => [
@@ -125,8 +146,8 @@ export function buildBuses(): Bus[] {
     route: "Admin / Sensor Node",
     status: "online",
     speed: 0,
-    lat: CITY_CENTER.lat,
-    lng: CITY_CENTER.lng,
+    lat: centerPt.lat,
+    lng: centerPt.lng,
     gps: true,
     camera: true,
     ai: true,
@@ -230,14 +251,13 @@ export const VEHICLE_CLASSES = [
 ];
 
 export const BOTTLENECKS = [
-  { route: "8A", location: "Panjagutta Junction", density: "Severe", delay: "9 min", status: "Active" },
-  { route: "10K", location: "Ameerpet Flyover", density: "High", delay: "6 min", status: "Active" },
-  { route: "5C", location: "Begumpet Rd", density: "High", delay: "5 min", status: "Easing" },
-  { route: "218", location: "Jubilee Check Post", density: "Medium", delay: "3 min", status: "Active" },
-  { route: "49M", location: "Khairatabad", density: "Severe", delay: "11 min", status: "Active" },
-  { route: "127K", location: "Lakdikapul", density: "Medium", delay: "4 min", status: "Easing" },
-  { route: "8A", location: "Somajiguda Circle", density: "Low", delay: "1 min", status: "Clear" },
-  { route: "10K", location: "SR Nagar", density: "Medium", delay: "3 min", status: "Active" },
+  { zone: "Punjagutta", location: "Panjagutta Junction", density: "Very Heavy", status: "Active" },
+  { zone: "Ameerpet", location: "Ameerpet Flyover", density: "Heavy", status: "Active" },
+  { zone: "Hyderabad", location: "Begumpet Rd", density: "Heavy", status: "Easing" },
+  { zone: "Ibrahim Bagh", location: "Jubilee Check Post", density: "Moderate Traffic", status: "Active" },
+  { zone: "Hyderabad", location: "Khairatabad", density: "Very Heavy", status: "Active" },
+  { zone: "Hyderabad", location: "Lakdikapul", density: "Moderate Traffic", status: "Easing" },
+  { zone: "Ameerpet", location: "SR Nagar", density: "Moderate Traffic", status: "Active" },
 ];
 
 export const IMPLEMENTED = [
@@ -247,7 +267,7 @@ export const IMPLEMENTED = [
   "Pothole AI detection (YOLO)",
   "Confidence filtering",
   "GPS-tagged detection events",
-  "H3-based location mapping",
+  "Zone-based location mapping",
   "Live event visualization",
 ];
 

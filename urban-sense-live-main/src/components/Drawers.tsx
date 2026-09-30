@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { useStore } from "@/lib/store";
 import { TYPE_LABEL } from "@/lib/mockData";
 import { severityTone, StatusBadge } from "./StatusBadge";
-import { cn } from "@/lib/utils";
+import { cn, getAreaName } from "@/lib/utils";
 
 function Drawer({
   open,
@@ -77,17 +77,12 @@ export function EventDrawer() {
           <div className="mt-4">
             <Field label="Confidence" value={`${Math.round(event.confidence * 100)}%`} />
             <Field label="Bus" value={event.busId} />
-            <Field label="Coordinates" value={`${event.latitude}, ${event.longitude}`} />
-            <Field label="H3 index" value={event.h3Index} />
+            <Field label="Zone" value={getAreaName(event.h3Index)} />
             <Field
               label="Detected"
               value={new Date(event.timestamp).toLocaleTimeString("en-GB")}
             />
             <Field label="Status" value={event.status.toUpperCase()} />
-            <Field
-              label="Pipeline"
-              value={<span className="text-muted-foreground">YOLO → GPS → H3 → FastAPI</span>}
-            />
           </div>
           {event.simulated && (
             <p className="mt-3 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-[11px] text-warning">
@@ -127,16 +122,15 @@ export function ZoneDrawer() {
     <Drawer
       open={!!zone}
       onClose={() => store.selectZone(null)}
-      title="H3 Zone Intelligence"
+      title="Zone Intelligence"
     >
       {zone && (
         <div>
           <div className="flex items-center justify-between">
-            <span className="font-mono text-xs text-primary">{zone.h3Index}</span>
+            <span className="font-medium text-xs text-primary">{getAreaName(zone.h3Index)}</span>
             <StatusBadge tone={severityTone(zone.risk)}>{zone.risk}</StatusBadge>
           </div>
           <div className="mt-4">
-            <Field label="Resolution" value="9" />
             <Field label="Road health" value={`${zone.roadHealth}/100`} />
             <Field label="Total detections" value={String(zone.incidents)} />
             <Field label="Potholes" value={String(zone.counts["pothole"] ?? 0)} />
@@ -149,10 +143,6 @@ export function ZoneDrawer() {
                   ? new Date(zone.lastDetection).toLocaleTimeString("en-GB")
                   : "—"
               }
-            />
-            <Field
-              label="Centroid"
-              value={`${zone.center.lat.toFixed(4)}, ${zone.center.lng.toFixed(4)}`}
             />
           </div>
           {zone.incidents > 20 && (

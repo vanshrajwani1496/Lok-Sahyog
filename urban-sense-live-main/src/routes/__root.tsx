@@ -4,6 +4,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useLocation,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -82,13 +83,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lok-Sahyog — City Mobility Intelligence" },
+      { title: "Urban Eye — City Mobility Intelligence" },
       {
         name: "description",
         content:
-          "AI-powered urban mobility intelligence and road safety control centre built on bus-mounted cameras, YOLO detection and H3 spatial indexing.",
+          "AI-powered urban mobility intelligence and road safety control centre built on bus-mounted cameras and zone-based spatial mapping.",
       },
-      { name: "author", content: "Lok-Sahyog" },
+      { name: "author", content: "Urban Eye" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -119,25 +120,97 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const router = useRouter();
+  const location = useLocation();
+  const isLogin = location.pathname.startsWith('/login');
+
+  // Route guarding migrated to native beforeLoad hook in index.tsx and live.tsx
 
   return (
     <QueryClientProvider client={queryClient}>
       <StoreProvider>
-        <div className="flex min-h-screen w-full bg-background">
-          <AppSidebar />
-          <div className="flex min-w-0 flex-1 flex-col">
-            <TopHeader />
-            <MobileNav />
-            <main className="flex-1 p-4 lg:p-6">
-              {/* Required: nested routes render here. */}
-              <Outlet />
-            </main>
+        <LiquidGlassStyles />
+        {isLogin ? (
+          <Outlet />
+        ) : (
+          <div className="flex min-h-screen w-full bg-background">
+            <AppSidebar />
+            <div className="flex min-w-0 flex-1 flex-col">
+              <TopHeader />
+              <MobileNav />
+              <main className="flex-1 p-4 lg:p-6">
+                <Outlet />
+              </main>
+            </div>
           </div>
-        </div>
-        <EventDrawer />
-        <ZoneDrawer />
+        )}
         <Toaster position="bottom-right" />
       </StoreProvider>
     </QueryClientProvider>
   );
 }
+
+/** Raw CSS injected at runtime — Tailwind cannot strip this. */
+function LiquidGlassStyles() {
+  return (
+    <style dangerouslySetInnerHTML={{
+      __html: `
+      /* ═══ iOS LIQUID GLASS — DARK MODE ═══ */
+
+      /* Vivid color mesh background */
+      .dark body,
+      html.dark body {
+        background-color: #08080f !important;
+        background-image:
+          radial-gradient(ellipse 700px 500px at 8% 15%, rgba(59, 130, 246, 0.22), transparent),
+          radial-gradient(ellipse 600px 400px at 82% 8%, rgba(168, 85, 247, 0.18), transparent),
+          radial-gradient(ellipse 550px 400px at 45% 85%, rgba(52, 211, 153, 0.15), transparent),
+          radial-gradient(ellipse 400px 350px at 90% 70%, rgba(251, 191, 36, 0.12), transparent) !important;
+        background-attachment: fixed !important;
+      }
+
+      /* Frosted glass panels */
+      .dark .panel,
+      html.dark .panel {
+        background: rgba(255, 255, 255, 0.04) !important;
+        -webkit-backdrop-filter: blur(60px) saturate(180%) brightness(110%) !important;
+        backdrop-filter: blur(60px) saturate(180%) brightness(110%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.10) !important;
+        border-top-color: rgba(255, 255, 255, 0.20) !important;
+        box-shadow:
+          0 0 0 0.5px rgba(255, 255, 255, 0.08),
+          0 8px 32px -4px rgba(0, 0, 0, 0.6),
+          inset 0 1px 0 0 rgba(255, 255, 255, 0.12) !important;
+      }
+
+      /* Glass sidebar */
+      .dark aside,
+      html.dark aside {
+        background: rgba(255, 255, 255, 0.025) !important;
+        -webkit-backdrop-filter: blur(60px) saturate(170%) !important;
+        backdrop-filter: blur(60px) saturate(170%) !important;
+        border-right-color: rgba(255, 255, 255, 0.06) !important;
+      }
+
+      /* Glass top header */
+      .dark header,
+      html.dark header {
+        background: rgba(8, 8, 15, 0.4) !important;
+        -webkit-backdrop-filter: blur(60px) saturate(170%) !important;
+        backdrop-filter: blur(60px) saturate(170%) !important;
+        border-bottom-color: rgba(255, 255, 255, 0.06) !important;
+      }
+
+      /* Glass nav active */
+      .dark .nav-active,
+      html.dark .nav-active {
+        background: linear-gradient(90deg, rgba(94, 158, 255, 0.14) 0%, rgba(94, 158, 255, 0.03) 100%) !important;
+        border: 1px solid rgba(94, 158, 255, 0.15) !important;
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.10),
+          0 2px 12px -4px rgba(94, 158, 255, 0.25) !important;
+      }
+    `}} />
+  );
+}
+

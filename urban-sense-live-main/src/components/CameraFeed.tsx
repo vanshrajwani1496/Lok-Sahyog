@@ -13,8 +13,8 @@ export function CameraFeed({
   streamUrl,
   compact = false,
 }: {
-  busId?: string;
-  streamUrl?: string;
+  busId?: string | undefined;
+  streamUrl?: string | undefined;
   compact?: boolean;
 }) {
   const { buses, demoMode, lastEvent } = useStore();
@@ -44,9 +44,8 @@ export function CameraFeed({
   }, [lastEvent, demoMode]);
 
   const confidence = lastEvent ? Math.round(lastEvent.confidence * 100) : 94;
-
-  const [ipAddress, setIpAddress] = useState("192.168.0.103");
-  const [isStreaming, setIsStreaming] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(true);
+  const [customIp, setCustomIp] = useState("192.168.0.103");
 
   return (
     <section className="panel overflow-hidden">
@@ -54,38 +53,31 @@ export function CameraFeed({
         <div>
           <h2 className="text-sm font-semibold tracking-wide uppercase">Live Edge Camera</h2>
           <p className="font-mono text-xs text-muted-foreground">
-            {bus.id} · RAW MJPEG FEED
+            {bus?.id || "N/A"} · RAW MJPEG FEED
           </p>
         </div>
         <div className="flex items-center gap-2">
-          {!isStreaming ? (
-            <>
-              <input
-                value={ipAddress}
-                onChange={(e) => setIpAddress(e.target.value)}
-                placeholder="192.168.x.x"
-                className="rounded border border-border bg-surface px-2 py-1 font-mono text-xs outline-none focus:border-primary/50 w-32"
-              />
-              <button
-                onClick={() => setIsStreaming(true)}
-                className="rounded bg-primary/20 px-2 py-1 text-xs font-medium text-primary hover:bg-primary/30"
-              >
-                CONNECT
-              </button>
-            </>
-          ) : (
-            <>
-              <span className="flex items-center gap-1.5 text-[11px] font-medium text-success uppercase">
-                <StatusDot tone="success" pulse /> Streaming
-              </span>
-              <button
-                onClick={() => setIsStreaming(false)}
-                className="rounded bg-critical/20 px-2 py-1 text-[10px] font-medium text-critical hover:bg-critical/30 ml-2"
-              >
-                DISCONNECT
-              </button>
-            </>
-          )}
+          <>
+            <span className="flex items-center gap-1.5 text-[11px] font-medium text-success uppercase">
+              <StatusDot tone="success" pulse /> Streaming
+            </span>
+            <input
+              type="text"
+              value={customIp}
+              onChange={(e) => setCustomIp(e.target.value)}
+              placeholder="192.168.0.x"
+              className="w-28 rounded border border-border/50 bg-background/50 px-2 py-1 ml-2 text-[10px] font-mono outline-none focus:border-primary/50"
+            />
+            <button
+              onClick={() => setIsStreaming((prev) => !prev)}
+              className={cn(
+                "rounded px-2 py-1 text-[10px] font-medium ml-2",
+                isStreaming ? "bg-critical/20 text-critical hover:bg-critical/30" : "bg-primary/20 text-primary hover:bg-primary/30"
+              )}
+            >
+              {isStreaming ? "DISCONNECT" : "CONNECT"}
+            </button>
+          </>
         </div>
       </div>
 
@@ -97,10 +89,12 @@ export function CameraFeed({
       >
         {isStreaming ? (
           <img
-            src={`http://${ipAddress}:8080/video`}
+            src={`http://${customIp}:8080/video`}
             className="size-full object-cover opacity-90"
-            alt="Live IP Webcam Feed"
-            onError={() => setIsStreaming(false)}
+            alt="Live Feed"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = 'data:image/gif;base64,R0lGODlhAQABAIAAAMLCwgAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==';
+            }}
           />
         ) : (
           <>

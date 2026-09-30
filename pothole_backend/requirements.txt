@@ -5,3 +5,6 @@ sqlalchemy==2.0.31
 psycopg2-binary
 h3==3.7.7
 python-multipart==0.0.9
+passlib[bcrypt]==1.7.4
+PyJWT==2.8.0
+python-multipart

@@ -77,10 +77,18 @@ function potholeToEvent(pothole: PotholeIncident): DetectionEvent {
     busId: pothole.bus_id || "BUS-LIVE",
     severity: severityFrom(confidence, type),
     timestamp: pothole.timestamp || new Date().toISOString(),
-    status: "open",
+    status: pothole.status || "open",
     simulated: false,
     reportCount: 1,
     bbox: pothole.bbox,
+    trackId: pothole.track_id,
+    eventId: pothole.event_id,
+    cameraId: pothole.camera_id,
+    evidence: pothole.evidence,
+    resolutionPhotoPath: pothole.resolution_photo_path,
+    escalated: pothole.escalated,
+    acknowledgedAt: pothole.acknowledged_at,
+    resolvedAt: pothole.resolved_at,
   } as DetectionEvent & { reportCount: number };
 }
 
@@ -103,18 +111,20 @@ interface StoreValue {
   setEventStatus: (id: string, status: DetectionEvent["status"]) => void;
   emitEvent: () => void;
   syncLivePotholes: (potholes: PotholeIncident[]) => void;
+  officialLocation: { lat: number; lng: number } | null;
+  setOfficialLocation: (loc: { lat: number; lng: number } | null) => void;
 }
 
 const StoreContext = createContext<StoreValue | null>(null);
 
 import { USE_MOCK } from "./api";
 
-// Enforcing rigorous real-time purity. No mock traces.
-const baseZones: Zone[] = [];
-const baseBuses: Bus[] = [];
+// Enforcing rigorous real-time purity for zones and events, but pre-loading the permanent physical TSRTC fleet
+const baseBuses: Bus[] = buildBuses();
 const baseEvents: DetectionEvent[] = [];
 
 export function StoreProvider({ children }: { children: ReactNode }) {
+  const [baseZones, setBaseZones] = useState<Zone[]>([]);
   const [events, setEvents] = useState<DetectionEvent[]>(baseEvents);
   const [buses, setBuses] = useState<Bus[]>(baseBuses);
   const [demoMode, setDemoMode] = useState(false);
@@ -122,11 +132,41 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [selectedEventId, selectEvent] = useState<string | null>(null);
   const [selectedZoneId, selectZone] = useState<string | null>(null);
   const [maintenance, setMaintenance] = useState<string[]>([]);
+  const [officialLocation, setOfficialLocation] = useState<{ lat: number; lng: number } | null>(null);
   const counter = useRef(1058);
   const prevSafetyRef = useRef(0);
   const prevPotholeRef = useRef(0);
 
-  const zones = useMemo(() => aggregate(baseZones, events), [events]);
+  useEffect(() => {
+    const cityId = localStorage.getItem("city_id");
+    if (cityId) {
+      fetch(`http://localhost:8000/api/v1/cities/${cityId}/zones`)
+        .then(res => res.json())
+        .then(data => {
+          const fetchedZones = data.map((mz: any) => ({
+            h3Index: mz.h3_index,
+            q: 0, r: 0,
+            center: { lat: mz.lat, lng: mz.lng },
+            risk: mz.risk || "none",
+            incidents: 0,
+            roadHealth: 100,
+            counts: {},
+            traffic: "low",
+            name: mz.name
+          }));
+          setBaseZones(fetchedZones);
+          if (fetchedZones.length > 0) {
+            const ct = fetchedZones[0].center;
+            import('./mockData').then((m) => {
+              setBuses(m.buildBuses(cityId, ct));
+            });
+          }
+        })
+        .catch(e => console.error("Could not fetch city zones", e));
+    }
+  }, []);
+
+  const zones = useMemo(() => aggregate(baseZones, events), [events, baseZones]);
   const safety = useMemo(() => computeSafety(events, zones), [events, zones]);
   const todayCount = useMemo(() => {
     const startOfDay = new Date().setHours(0, 0, 0, 0);
@@ -294,6 +334,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setEvents((prev) => prev.map((e) => (e.id === id ? { ...e, status } : e))),
     emitEvent,
     syncLivePotholes,
+    officialLocation,
+    setOfficialLocation,
   };
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;

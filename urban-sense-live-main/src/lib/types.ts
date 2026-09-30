@@ -11,7 +11,9 @@ export type DetectionType =
   | "traffic_congestion"
   | "pedestrian_risk"
   | "rash_driving"
-  | "incident_vehicle";
+  | "incident_vehicle"
+  | "vehicle"
+  | "motorcycle";
 
 export type ModuleStatus = "active" | "ready" | "pending" | "analytics";
 
@@ -28,6 +30,14 @@ export interface DetectionEvent {
   status: "open" | "acknowledged" | "resolved";
   simulated?: boolean;
   bbox?: [number, number, number, number];
+  trackId?: number;
+  eventId?: string;
+  cameraId?: string;
+  evidence?: any;
+  resolutionPhotoPath?: string;
+  escalated?: boolean;
+  acknowledgedAt?: string;
+  resolvedAt?: string;
 }
 
 export interface Zone {
@@ -42,6 +52,7 @@ export interface Zone {
   traffic: "low" | "medium" | "high" | "severe";
   risk: Severity | "none";
   lastDetection?: string | undefined;
+  name?: string;
 }
 
 export interface Bus {

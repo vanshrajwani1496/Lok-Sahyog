@@ -1,5 +1,5 @@
 import { useStore } from "@/lib/store";
-import { WEIGHTS } from "@/lib/scoring";
+import { WEIGHTS, computeSafety } from "@/lib/scoring";
 import { cn } from "@/lib/utils";
 
 function Bar({ label, value, weight }: { label: string; value: number; weight: number }) {
@@ -22,12 +22,18 @@ function Bar({ label, value, weight }: { label: string; value: number; weight: n
   );
 }
 
-export function SafetyScore() {
-  const { safety, prevSafety } = useStore();
+import type { DetectionEvent } from "@/lib/types";
+
+export function SafetyScore({ events }: { events?: DetectionEvent[] }) {
+  const store = useStore();
+
+  // Conditionally intercept the mathematical safety calculation if a localized prop filter is active
+  const safety = events ? computeSafety(events, store.zones) : store.safety;
+
   const s = safety.overall;
   const circumference = 2 * Math.PI * 52;
   const stroke = s >= 80 ? "text-success" : s >= 65 ? "text-warning" : "text-critical";
-  const delta = s - prevSafety;
+  const delta = events ? 0 : s - store.prevSafety; // Hide delta if we are looking at segmented non-global states
 
   return (
     <section className="panel p-5">
@@ -77,7 +83,7 @@ export function SafetyScore() {
         <div className="mt-4 rounded-md border border-border bg-surface-2/50 px-3 py-2 font-mono text-xs">
           <span className="text-muted-foreground">Score impact of latest detection: </span>
           <span className={delta < 0 ? "text-critical" : "text-success"}>
-            {prevSafety} → {s} ({delta > 0 ? "+" : ""}
+            {store.prevSafety} → {s} ({delta > 0 ? "+" : ""}
             {delta})
           </span>
         </div>

@@ -1,0 +1,54 @@
+﻿On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes not staged for commit:
+  (use "git add/rm <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   inference.py
+	modified:   pothole_backend/main.py
+	modified:   pothole_backend/models.py
+	modified:   pothole_backend/requirements.txt
+	modified:   pothole_backend/schemas.py
+	modified:   urban-sense-live-main/src/components/AIPerceptionPanel.tsx
+	modified:   urban-sense-live-main/src/components/ActionNeededTable.tsx
+	modified:   urban-sense-live-main/src/components/AppSidebar.tsx
+	modified:   urban-sense-live-main/src/components/CameraFeed.tsx
+	modified:   urban-sense-live-main/src/components/DetectionFeed.tsx
+	modified:   urban-sense-live-main/src/components/Drawers.tsx
+	modified:   urban-sense-live-main/src/components/KPIGrid.tsx
+	modified:   urban-sense-live-main/src/components/LiveMap.tsx
+	modified:   urban-sense-live-main/src/components/SafetyScore.tsx
+	modified:   urban-sense-live-main/src/components/TopHeader.tsx
+	modified:   urban-sense-live-main/src/lib/api.ts
+	modified:   urban-sense-live-main/src/lib/mockData.ts
+	modified:   urban-sense-live-main/src/lib/scoring.ts
+	modified:   urban-sense-live-main/src/lib/store.tsx
+	modified:   urban-sense-live-main/src/lib/types.ts
+	modified:   urban-sense-live-main/src/lib/utils.ts
+	modified:   urban-sense-live-main/src/routeTree.gen.ts
+	modified:   urban-sense-live-main/src/routes/__root.tsx
+	modified:   urban-sense-live-main/src/routes/analytics.tsx
+	deleted:    urban-sense-live-main/src/routes/architecture.tsx
+	modified:   urban-sense-live-main/src/routes/fleet.tsx
+	modified:   urban-sense-live-main/src/routes/incidents.tsx
+	modified:   urban-sense-live-main/src/routes/index.tsx
+	modified:   urban-sense-live-main/src/routes/live.tsx
+	modified:   urban-sense-live-main/src/routes/road.tsx
+	modified:   urban-sense-live-main/src/routes/traffic.tsx
+	modified:   urban-sense-live-main/src/styles.css
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	VehicleDetection_ByteTrack/
+	best_ncnn_model.zip
+	pothole_backend/auth.py
+	pothole_backend/seed_user.py
+	pothole_backend/truncate_potholes.py
+	pothole_backend/uploads/resolved_15_technicalapproach.png
+	pothole_backend/uploads/resolved_16_tech.png
+	status.txt
+	urban-sense-live-main/replace_brand.js
+	urban-sense-live-main/src/routes/leaderboard.tsx
+	urban-sense-live-main/src/routes/login.tsx
+
+no changes added to commit (use "git add" and/or "git commit -a")

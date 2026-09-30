@@ -11,10 +11,11 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
-import { Route as ArchitectureRouteImport } from './routes/architecture'
 import { Route as FleetRouteImport } from './routes/fleet'
 import { Route as IncidentsRouteImport } from './routes/incidents'
+import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as LiveRouteImport } from './routes/live'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as RoadRouteImport } from './routes/road'
 import { Route as TrafficRouteImport } from './routes/traffic'
 
@@ -28,11 +29,6 @@ const AnalyticsRoute = AnalyticsRouteImport.update({
   path: '/analytics',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ArchitectureRoute = ArchitectureRouteImport.update({
-  id: '/architecture',
-  path: '/architecture',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const FleetRoute = FleetRouteImport.update({
   id: '/fleet',
   path: '/fleet',
@@ -43,9 +39,19 @@ const IncidentsRoute = IncidentsRouteImport.update({
   path: '/incidents',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LeaderboardRoute = LeaderboardRouteImport.update({
+  id: '/leaderboard',
+  path: '/leaderboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LiveRoute = LiveRouteImport.update({
   id: '/live',
   path: '/live',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RoadRoute = RoadRouteImport.update({
@@ -62,20 +68,22 @@ const TrafficRoute = TrafficRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/analytics': typeof AnalyticsRoute
-  '/architecture': typeof ArchitectureRoute
   '/fleet': typeof FleetRoute
   '/incidents': typeof IncidentsRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/live': typeof LiveRoute
+  '/login': typeof LoginRoute
   '/road': typeof RoadRoute
   '/traffic': typeof TrafficRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/analytics': typeof AnalyticsRoute
-  '/architecture': typeof ArchitectureRoute
   '/fleet': typeof FleetRoute
   '/incidents': typeof IncidentsRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/live': typeof LiveRoute
+  '/login': typeof LoginRoute
   '/road': typeof RoadRoute
   '/traffic': typeof TrafficRoute
 }
@@ -83,10 +91,11 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/analytics': typeof AnalyticsRoute
-  '/architecture': typeof ArchitectureRoute
   '/fleet': typeof FleetRoute
   '/incidents': typeof IncidentsRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/live': typeof LiveRoute
+  '/login': typeof LoginRoute
   '/road': typeof RoadRoute
   '/traffic': typeof TrafficRoute
 }
@@ -95,30 +104,33 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/analytics'
-    | '/architecture'
     | '/fleet'
     | '/incidents'
+    | '/leaderboard'
     | '/live'
+    | '/login'
     | '/road'
     | '/traffic'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/analytics'
-    | '/architecture'
     | '/fleet'
     | '/incidents'
+    | '/leaderboard'
     | '/live'
+    | '/login'
     | '/road'
     | '/traffic'
   id:
     | '__root__'
     | '/'
     | '/analytics'
-    | '/architecture'
     | '/fleet'
     | '/incidents'
+    | '/leaderboard'
     | '/live'
+    | '/login'
     | '/road'
     | '/traffic'
   fileRoutesById: FileRoutesById
@@ -126,10 +138,11 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AnalyticsRoute: typeof AnalyticsRoute
-  ArchitectureRoute: typeof ArchitectureRoute
   FleetRoute: typeof FleetRoute
   IncidentsRoute: typeof IncidentsRoute
+  LeaderboardRoute: typeof LeaderboardRoute
   LiveRoute: typeof LiveRoute
+  LoginRoute: typeof LoginRoute
   RoadRoute: typeof RoadRoute
   TrafficRoute: typeof TrafficRoute
 }
@@ -150,13 +163,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AnalyticsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/architecture': {
-      id: '/architecture'
-      path: '/architecture'
-      fullPath: '/architecture'
-      preLoaderRoute: typeof ArchitectureRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/fleet': {
       id: '/fleet'
       path: '/fleet'
@@ -171,11 +177,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IncidentsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/leaderboard': {
+      id: '/leaderboard'
+      path: '/leaderboard'
+      fullPath: '/leaderboard'
+      preLoaderRoute: typeof LeaderboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/live': {
       id: '/live'
       path: '/live'
       fullPath: '/live'
       preLoaderRoute: typeof LiveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/road': {
@@ -198,10 +218,11 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AnalyticsRoute: AnalyticsRoute,
-  ArchitectureRoute: ArchitectureRoute,
   FleetRoute: FleetRoute,
   IncidentsRoute: IncidentsRoute,
+  LeaderboardRoute: LeaderboardRoute,
   LiveRoute: LiveRoute,
+  LoginRoute: LoginRoute,
   RoadRoute: RoadRoute,
   TrafficRoute: TrafficRoute,
 }

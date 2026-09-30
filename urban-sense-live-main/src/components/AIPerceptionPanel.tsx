@@ -1,41 +1,46 @@
 import { useStore } from "@/lib/store";
-import { TYPE_LABEL } from "@/lib/mockData";
+import { getStreetName, getAreaName } from "@/lib/utils";
 import { StatusDot } from "./StatusBadge";
 
 function Row({ label, value, mono = true }: { label: string; value: string; mono?: boolean }) {
   return (
-    <div className="flex items-center justify-between border-b border-border/60 py-2 last:border-0">
+    <div className="flex items-center justify-between border-b border-border/60 py-3 last:border-0">
       <span className="text-xs text-muted-foreground">{label}</span>
-      <span className={mono ? "font-mono text-xs" : "text-xs"}>{value}</span>
+      <span className={mono ? "font-mono text-xs" : "text-xs font-medium"}>{value}</span>
     </div>
   );
 }
 
 export function AIPerceptionPanel() {
-  const { events, lastEvent, demoMode, todayCount } = useStore();
+  const { events, lastEvent, todayCount } = useStore();
   const current = lastEvent ?? events[0];
+
+  const activeNodes = new Set(events.map(e => e.busId)).size || 1;
+  const activeZones = new Set(events.map(e => getAreaName(e.h3Index))).size || 1;
+  const criticalCount = events.filter(e => e.severity === "critical").length;
 
   return (
     <section className="panel p-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold tracking-wide uppercase">AI Perception Engine</h2>
+        <h2 className="text-sm font-semibold tracking-wide uppercase">Operational Telemetry</h2>
         <span className="flex items-center gap-1.5 text-[11px] font-medium text-success uppercase">
-          <StatusDot tone="success" pulse /> Running
+          <StatusDot tone="success" pulse /> Syncing
         </span>
       </div>
       <div className="mt-2">
-        <Row label="Model" value="YOLOv8n · pothole.pt" />
-        <Row label="Inference" value={demoMode ? "32 FPS" : "30 FPS"} />
-        <Row label="Confidence threshold" value="60%" />
-        <Row label="Frames processed" value={(18420 + events.length * 37).toLocaleString()} />
-        <Row label="Detections today" value={String(todayCount)} />
+        <Row label="Active Edge Nodes" value={`${activeNodes} Online`} mono={false} />
+        <Row label="Zonal Coverage" value={`${activeZones} Municipal Zones`} mono={false} />
+        <Row label="Critical Safety Risks" value={`${criticalCount} Unresolved`} />
+        <Row label="Average Dispatch Latency" value="1.2s" />
+        <Row label="Detections Logged (24h)" value={String(todayCount)} />
         <Row
-          label="Current detection"
+          label="Active Scanning Target"
           value={
             current
-              ? `${TYPE_LABEL[current.type].toUpperCase()} — ${Math.round(current.confidence * 100)}%`
-              : "IDLE"
+              ? getStreetName(current.h3Index)
+              : "Awaiting Feed..."
           }
+          mono={false}
         />
       </div>
     </section>

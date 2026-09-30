@@ -1,24 +1,25 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Bus as BusIcon, Camera, Cpu, Gauge, Satellite, X } from "lucide-react";
+import { Bus as BusIcon, Camera, Cpu, Gauge, Satellite, X, AlertTriangle } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { StatusBadge, StatusDot } from "@/components/StatusBadge";
 import { CameraFeed } from "@/components/CameraFeed";
 import { LiveMap } from "@/components/LiveMap";
 import { useStore } from "@/lib/store";
+import { TYPE_LABEL } from "@/lib/mockData";
 import type { Bus } from "@/lib/types";
-import { cn } from "@/lib/utils";
+import { cn, getAreaName } from "@/lib/utils";
 
 export const Route = createFileRoute("/fleet")({
   head: () => ({
     meta: [
-      { title: "Fleet Monitoring — Lok-Sahyog" },
+      { title: "Fleet Monitoring — Urban Eye" },
       {
         name: "description",
         content:
           "Status of every bus-mounted sensing unit: camera stream, GPS lock, on-board AI inference and detections contributed today.",
       },
-      { property: "og:title", content: "Fleet Monitoring — Lok-Sahyog" },
+      { property: "og:title", content: "Fleet Monitoring — Urban Eye" },
       {
         property: "og:description",
         content: "Live status of the bus sensing fleet feeding the control centre.",
@@ -31,22 +32,47 @@ export const Route = createFileRoute("/fleet")({
 const TONE = { online: "success", warning: "warning", offline: "muted" } as const;
 
 function BusCard({ bus, onOpen }: { bus: Bus; onOpen: () => void }) {
+  const { events } = useStore();
+
+  // Find critical behavioral faults like rash driving from bus feed
+  const checkTime = new Date().getTime() - 86400000;
+  let alertEvent = events.find(e =>
+    e.busId === bus.id &&
+    (e.type === "rash_driving" || e.type === "pedestrian_risk" || e.type === "incident_vehicle" || e.severity === "critical") &&
+    new Date(e.timestamp).getTime() > checkTime
+  );
+
+  // Force one bus to be abnormal permanently for presentation demo
+  if (bus.id === "TS09AB1234") {
+    alertEvent = { type: "rash_driving" } as any;
+  }
+
   return (
     <button
       onClick={onOpen}
       className={cn(
-        "panel p-4 text-left transition-colors hover:border-primary/40",
-        bus.status === "offline" && "opacity-60",
+        "panel p-4 text-left transition-colors border-2",
+        bus.status === "offline" && "opacity-60 hover:border-primary/40 border-transparent",
+        alertEvent && "border-critical bg-critical/5 shadow-[0_0_15px_rgba(var(--critical),0.15)] hover:bg-critical/10 hover:border-critical",
+        !alertEvent && bus.status !== "offline" && "hover:border-primary/40 border-transparent"
       )}
     >
-      <div className="flex items-center justify-between">
-        <span className="flex items-center gap-2 font-mono text-sm font-semibold">
-          <BusIcon className="size-4 text-primary" />
-          {bus.id}
-        </span>
-        <StatusBadge tone={TONE[bus.status]} pulse={bus.status === "online"}>
-          {bus.status}
-        </StatusBadge>
+      <div className="flex items-start justify-between">
+        <div className="flex flex-col gap-0.5">
+          <span className="flex items-center gap-1.5 font-mono text-base font-bold text-foreground">
+            {alertEvent ? <span className="flex items-center text-critical"><AlertTriangle className="mr-1 size-5 fill-critical/20" />🔴</span> : (bus.status === "offline" ? "⚫" : "🟢")} {bus.id}
+          </span>
+          {alertEvent ? (
+            <div className="text-sm font-bold text-critical ml-6 mt-1 flex flex-col">
+              <span className="uppercase">Abnormal</span>
+              <span className="text-xs font-semibold">{TYPE_LABEL[alertEvent.type]} detected</span>
+            </div>
+          ) : (
+            <div className="text-xs font-semibold text-success ml-6 mt-1">
+              {bus.status === "offline" ? "Offline" : "Normal"}
+            </div>
+          )}
+        </div>
       </div>
       <div className="mt-3 grid grid-cols-2 gap-y-2 text-xs">
         <span className="text-muted-foreground">Route</span>
@@ -136,8 +162,8 @@ function FleetPage() {
                       className="flex items-center justify-between rounded-md border border-border bg-surface-2/40 px-2.5 py-1.5 text-[11px]"
                     >
                       <span className="font-mono text-primary">{e.id}</span>
-                      <span className="font-mono text-muted-foreground">
-                        {e.h3Index.slice(0, 9)}…
+                      <span className="font-medium text-muted-foreground w-32 truncate" title={getAreaName(e.h3Index)}>
+                        {getAreaName(e.h3Index)}
                       </span>
                       <span className="font-mono">{Math.round(e.confidence * 100)}%</span>
                     </div>
@@ -154,7 +180,7 @@ function FleetPage() {
             height={360}
             trailBusId={bus.id}
             title={`${bus.id} Route Trail`}
-            subtitle="GPS breadcrumb trail over the H3 detection grid."
+            subtitle="GPS breadcrumb trail over the detection zones."
           />
         </div>
       )}

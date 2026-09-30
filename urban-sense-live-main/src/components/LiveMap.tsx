@@ -1,13 +1,13 @@
 import { useMemo, useState } from "react";
-import { Crosshair, Layers, Minus, Plus } from "lucide-react";
-import { hexPixel, hexPoints, shortH3 } from "@/lib/h3Utils";
+import { Crosshair, Layers, Minus, Plus, MapPin } from "lucide-react";
+import { hexPixel, hexPoints } from "@/lib/h3Utils";
 import { useStore } from "@/lib/store";
 import type { DetectionEvent, Zone } from "@/lib/types";
-import { cn } from "@/lib/utils";
+import { cn, getAreaName, ZONES, ZONE_CENTERS } from "@/lib/utils";
 import { StatusDot } from "./StatusBadge";
 
 const RISK_FILL: Record<string, string> = {
-  none: "fill-success/8 stroke-border",
+  none: "fill-transparent stroke-transparent hover:stroke-border",
   low: "fill-success/25 stroke-success/40",
   medium: "fill-warning/25 stroke-warning/45",
   high: "fill-[oklch(0.68_0.18_35)]/30 stroke-[oklch(0.68_0.18_35)]/60",
@@ -15,7 +15,7 @@ const RISK_FILL: Record<string, string> = {
 };
 
 const LEGEND = [
-  { risk: "none", label: "Normal" },
+
   { risk: "low", label: "Low" },
   { risk: "medium", label: "Moderate" },
   { risk: "high", label: "High" },
@@ -30,7 +30,7 @@ export function LiveMap({
   showBuses = true,
   trailBusId,
   title = "Live Urban Road Intelligence",
-  subtitle = "H3-based spatial aggregation of AI detections.",
+  subtitle = "Zone-based spatial aggregation of AI detections.",
 }: {
   events?: DetectionEvent[];
   height?: number;
@@ -44,6 +44,30 @@ export function LiveMap({
   const [zoom, setZoom] = useState(1);
   const [showHex, setShowHex] = useState(true);
   const [hover, setHover] = useState<Zone | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const calibrateGPS = () => {
+    if (typeof window !== "undefined" && "geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          store.setOfficialLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+          setZoom(1.5);
+        },
+        (err) => console.error("GPS Calibration denied or failed", err),
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      );
+    }
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!searchQuery) return;
+    const q = searchQuery.toLowerCase();
+    const matched = store.zones.find(z => getAreaName(z.h3Index).toLowerCase().includes(q));
+    if (matched) {
+      store.selectZone(matched.h3Index);
+    }
+  };
 
   const zones = useMemo(() => {
     const ids = new Set(visible.map((e) => e.h3Index));
@@ -62,16 +86,26 @@ export function LiveMap({
     return hexPixel(x, y, SIZE);
   };
 
-  // Dynamically map the viewport to lock directly over the active edge device location
-  const centerLat = visible[0] ? visible[0].latitude : 17.3770;
-  const centerLng = visible[0] ? visible[0].longitude : 78.4730;
+  const selectedZone = store.selectedZoneId ? store.zones.find(z => z.h3Index === store.selectedZoneId) : null;
+  // Fallback to static absolute coordinate values if the zone is empty and the user selected it by exact name string
+  const staticFallback = store.selectedZoneId ? store.zones.find(z => (z.name || getAreaName(z.h3Index)) === store.selectedZoneId) : null;
+
+  const defaultLat = store.buses[0]?.lat ?? 17.3770;
+  const defaultLng = store.buses[0]?.lng ?? 78.4730;
+
+  // Dynamically map the viewport to lock over the selected zone, falling back to the active edge device
+  const centerLat = selectedZone ? selectedZone.center.lat : (staticFallback ? staticFallback.center.lat : (visible[0] ? visible[0].latitude : defaultLat));
+  const centerLng = selectedZone ? selectedZone.center.lng : (staticFallback ? staticFallback.center.lng : (visible[0] ? visible[0].longitude : defaultLng));
   const bbox = `${centerLng - 0.038},${centerLat - 0.030},${centerLng + 0.038},${centerLat + 0.030}`;
 
   const focusPx = project(centerLat, centerLng);
   const vWidth = 2400;
   const vHeight = 1000;
-  const minX = focusPx.x - vWidth / 2;
-  const minY = focusPx.y - vHeight / 2;
+  let focusX = focusPx.x;
+  let focusY = focusPx.y;
+
+  const minX = focusX - vWidth / 2;
+  const minY = focusY - vHeight / 2;
   const w = vWidth;
   const h = vHeight;
 
@@ -85,6 +119,34 @@ export function LiveMap({
           <h2 className="text-sm font-semibold tracking-wide uppercase">{title}</h2>
           <p className="text-xs text-muted-foreground">{subtitle}</p>
         </div>
+        <div className="mr-auto ml-4">
+          <form onSubmit={handleSearch} className="flex items-center">
+            <select
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                const q = e.target.value;
+                if (!q) {
+                  store.selectZone(null); // clear selection if "Select Zone" chosen
+                  return;
+                }
+                const matched = store.zones.find(z => (z.name || getAreaName(z.h3Index)) === q);
+                if (matched) {
+                  store.selectZone(matched.h3Index);
+                } else {
+                  // The zone hasn't been instantiated yet mathematically! Pass the raw name through to grab static coordinates instead.
+                  store.selectZone(q);
+                }
+              }}
+              className="w-40 xl:w-56 rounded-md border border-border bg-surface px-2 py-1.5 text-xs outline-none focus:border-primary/50"
+            >
+              <option value="">Select Zone...</option>
+              {Array.from(new Set(store.zones.map(z => z.name || getAreaName(z.h3Index)))).map(zName => (
+                <option key={zName} value={zName}>{zName}</option>
+              ))}
+            </select>
+          </form>
+        </div>
         <div className="flex items-center gap-1.5">
           <button
             onClick={() => setShowHex((v) => !v)}
@@ -93,7 +155,7 @@ export function LiveMap({
               showHex ? "border-primary/40 bg-primary/10 text-primary" : "border-border text-muted-foreground",
             )}
           >
-            <Layers className="size-3.5" /> H3 Layer
+            <Layers className="size-3.5" /> Zonal Layer
           </button>
           <button
             onClick={() => setZoom((z) => Math.max(0.7, +(z - 0.15).toFixed(2)))}
@@ -110,8 +172,21 @@ export function LiveMap({
           <button
             onClick={() => setZoom(1)}
             className="grid size-7 place-items-center rounded-md border border-border text-muted-foreground hover:text-foreground"
+            title="Reset Map"
           >
             <Crosshair className="size-3.5" />
+          </button>
+          <button
+            onClick={calibrateGPS}
+            className={cn(
+              "grid size-7 place-items-center rounded-md border transition-colors",
+              store.officialLocation
+                ? "border-info/40 bg-info/10 text-info"
+                : "border-border text-muted-foreground hover:text-foreground"
+            )}
+            title="Locate Device"
+          >
+            <MapPin className="size-3.5" />
           </button>
         </div>
       </div>
@@ -218,16 +293,37 @@ export function LiveMap({
                   </g>
                 );
               })}
+
+          {store.officialLocation && (() => {
+            const p = project(store.officialLocation.lat, store.officialLocation.lng);
+            return (
+              <g className="transition-all duration-1000">
+                <circle cx={p.x} cy={p.y} r={14} className="fill-info/30 hover:fill-info/40 animate-pulse" />
+                <circle cx={p.x} cy={p.y} r={6} className="fill-info stroke-background" strokeWidth={2} />
+              </g>
+            );
+          })()}
         </svg>
 
         {hover && (
           <div className="pointer-events-none absolute top-3 left-3 rounded-md border border-border bg-popover/95 px-3 py-2 text-xs shadow-panel">
-            <div className="font-mono text-[11px] text-primary">{shortH3(hover.h3Index)}</div>
-            <div className="mt-1 text-muted-foreground">
-              Risk <span className="text-foreground uppercase">{hover.risk}</span> · Detections{" "}
-              <span className="text-foreground">{hover.incidents}</span> · Road health{" "}
-              <span className="text-foreground">{hover.roadHealth}</span>
-            </div>
+            <div className="font-medium text-[11px] text-primary">{getAreaName(hover.h3Index)}</div>
+            {hover.incidents === 0 ? (
+              <div className="mt-1 text-muted-foreground font-medium">No detections recorded in this zone.</div>
+            ) : (
+              <div className="mt-1 text-muted-foreground">
+                Risk <span className="text-foreground uppercase">{hover.risk}</span> · Detections{" "}
+                <span className="text-foreground">{hover.incidents}</span> · Road health{" "}
+                <span className="text-foreground">{hover.roadHealth}</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {store.selectedZoneId && !hover && selectedZone && selectedZone.incidents === 0 && (
+          <div className="pointer-events-none absolute top-3 left-3 rounded-md border border-border bg-popover/95 px-3 py-2 text-xs shadow-panel">
+            <div className="font-medium text-[11px] text-primary">{getAreaName(selectedZone.h3Index)}</div>
+            <div className="mt-1 text-muted-foreground font-medium">No detections recorded in this zone.</div>
           </div>
         )}
 

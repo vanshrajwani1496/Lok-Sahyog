@@ -42,10 +42,12 @@ export function computeSafety(events: DetectionEvent[], zones: Zone[]): SafetyBr
       case "pothole":
       case "road_damage":
         roadPenalty += 0.55 * w;
+        infraPenalty += 0.25 * w; // Roads inherently degrade baseline civic infrastructure
         break;
       case "waterlogging":
         roadPenalty += 0.4 * w;
         trafficPenalty += 0.3 * w;
+        infraPenalty += 0.35 * w; // Deep standing water causes unseen infrastructural decay
         break;
       case "traffic_congestion":
       case "rash_driving":
@@ -77,9 +79,9 @@ export function computeSafety(events: DetectionEvent[], zones: Zone[]): SafetyBr
 
   const overall = clamp(
     road * WEIGHTS.road +
-      traffic * WEIGHTS.traffic +
-      pedestrian * WEIGHTS.pedestrian +
-      infrastructure * WEIGHTS.infrastructure,
+    traffic * WEIGHTS.traffic +
+    pedestrian * WEIGHTS.pedestrian +
+    infrastructure * WEIGHTS.infrastructure,
   );
 
   return { road, traffic, pedestrian, infrastructure, overall, label: scoreLabel(overall) };

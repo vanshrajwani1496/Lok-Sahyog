@@ -1,0 +1,98 @@
+import os
+from database import SessionLocal, engine
+from models import User, Base, City, MunicipalZone, PotholeIncident
+from auth import get_password_hash
+from dotenv import load_dotenv
+
+load_dotenv()
+
+CITIES_DATA = [
+    {"id": "MUM", "name": "Mumbai (BMC)", "lat": 19.0760, "lng": 72.8777, "base_score": 62, "zones": [
+        {"name": "Bandra", "h3_index": "8860145881fffff", "lat": 19.0596, "lng": 72.8295},
+        {"name": "Andheri", "h3_index": "8860145883fffff", "lat": 19.1136, "lng": 72.8697},
+        {"name": "Colaba", "h3_index": "8860145885fffff", "lat": 18.9067, "lng": 72.8147}
+    ]},
+    {"id": "HYD", "name": "Hyderabad (GHMC)", "lat": 17.3850, "lng": 78.4867, "base_score": 75, "zones": [
+        {"name": "Khairatabad", "h3_index": "8860145887fffff", "lat": 17.4124, "lng": 78.4552},
+        {"name": "Charminar", "h3_index": "8860145889fffff", "lat": 17.3616, "lng": 78.4747},
+        {"name": "Kukatpally", "h3_index": "886014588bfffff", "lat": 17.4948, "lng": 78.3996}
+    ]},
+    {"id": "DEL", "name": "New Delhi (NDMC)", "lat": 28.6139, "lng": 77.2090, "base_score": 45, "zones": [
+        {"name": "Connaught Place", "h3_index": "88601458a1fffff", "lat": 28.6304, "lng": 77.2177},
+        {"name": "Vasant Kunj", "h3_index": "88601458a3fffff", "lat": 28.5293, "lng": 77.1539}
+    ]},
+    {"id": "BLR", "name": "Bengaluru (BBMP)", "lat": 12.9716, "lng": 77.5946, "base_score": 68, "zones": [
+        {"name": "Koramangala", "h3_index": "88601458a5fffff", "lat": 12.9352, "lng": 77.6245},
+        {"name": "Indiranagar", "h3_index": "88601458a7fffff", "lat": 12.9784, "lng": 77.6408}
+    ]},
+    {"id": "PUN", "name": "Pune (PMC)", "lat": 18.5204, "lng": 73.8567, "base_score": 71, "zones": [
+        {"name": "Koregaon Park", "h3_index": "88601458a9fffff", "lat": 18.5362, "lng": 73.8939}
+    ]},
+    {"id": "CHE", "name": "Chennai (GCC)", "lat": 13.0827, "lng": 80.2707, "base_score": 78, "zones": [
+        {"name": "T Nagar", "h3_index": "88601458abfffff", "lat": 13.0418, "lng": 80.2341}
+    ]}
+]
+
+def populate_db():
+    print("Re-creating all backend tables to support Multi-Tenant City Ecosystem...")
+    # Drop existing tables
+    User.__table__.drop(bind=engine, checkfirst=True)
+    PotholeIncident.__table__.drop(bind=engine, checkfirst=True)
+    MunicipalZone.__table__.drop(bind=engine, checkfirst=True)
+    City.__table__.drop(bind=engine, checkfirst=True)
+    
+    # Re-create them with new multi-city schema
+    Base.metadata.create_all(bind=engine)
+    
+    db = SessionLocal()
+    target_email = os.getenv("SMTP_EMAIL") or "test@example.com"
+    
+    print(f"Seeding {len(CITIES_DATA)} Indian Smart Cities...")
+    
+    for cdata in CITIES_DATA:
+        # Create City
+        city = City(
+            id=cdata["id"],
+            name=cdata["name"],
+            lat=cdata["lat"],
+            lng=cdata["lng"],
+            base_score=cdata["base_score"]
+        )
+        db.add(city)
+        db.flush() # Secure the ID
+        
+        # Create Admin Account for City
+        admin_username = f"{cdata['id'].lower()}_admin"
+        if cdata['id'] == 'HYD':
+            admin_username = "admin" # Legacy backwards compatibility
+            
+        admin = User(
+            username=admin_username,
+            password_hash=get_password_hash("admin"),
+            email=target_email,
+            city_id=cdata["id"],
+            role="zonal_commissioner",
+            zone="All Zones"
+        )
+        db.add(admin)
+        
+        # Create Zones
+        for zdata in cdata["zones"]:
+            zone = MunicipalZone(
+                city_id=cdata["id"],
+                name=zdata["name"],
+                h3_index=zdata["h3_index"],
+                lat=zdata["lat"],
+                lng=zdata["lng"]
+            )
+            db.add(zone)
+
+    db.commit()
+    print("✅ Seed Complete! Multi-City Administrator Accounts Generated:")
+    for cdata in CITIES_DATA:
+        usr = f"{cdata['id'].lower()}_admin" if cdata['id'] != 'HYD' else 'admin'
+        print(f"   [{cdata['name']}] ID: '{usr}' / Pass: 'admin'")
+    db.close()
+
+if __name__ == "__main__":
+    populate_db()

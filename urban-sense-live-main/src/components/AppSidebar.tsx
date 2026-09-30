@@ -8,9 +8,11 @@ import {
   Route as RouteIcon,
   ShieldAlert,
   TrafficCone,
+  Trophy,
 } from "lucide-react";
 import { StatusDot } from "./StatusBadge";
 import { cn } from "@/lib/utils";
+import { api } from "@/lib/api";
 
 const NAV = [
   { to: "/", label: "Overview", icon: LayoutDashboard },
@@ -20,20 +22,20 @@ const NAV = [
   { to: "/incidents", label: "Incidents", icon: ShieldAlert },
   { to: "/fleet", label: "Fleet", icon: Bus },
   { to: "/analytics", label: "Analytics", icon: BarChart3 },
-  { to: "/architecture", label: "System Architecture", icon: Network },
+  { to: "/leaderboard", label: "Leaderboard", icon: Trophy },
 ] as const;
 
 export function AppSidebar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   return (
-    <aside className="sticky top-0 hidden h-screen w-[15rem] shrink-0 flex-col border-r border-sidebar-border bg-sidebar/70 backdrop-blur-xl lg:flex xl:w-[16rem]">
+    <aside className="sticky top-0 hidden h-screen w-[15rem] shrink-0 flex-col border-r border-sidebar-border bg-sidebar backdrop-blur-2xl lg:flex xl:w-[16rem]">
       <div className="flex h-16 items-center gap-2.5 border-b border-sidebar-border px-4">
         <div className="grid size-8 place-items-center rounded-md border border-primary/30 bg-primary/12 p-1">
           <Activity className="size-5 text-primary" />
         </div>
         <div className="leading-tight">
-          <div className="text-sm font-semibold tracking-wide">Lok-Sahyog</div>
+          <div className="text-sm font-semibold tracking-wide">Urban Eye</div>
           <div className="text-[11px] text-muted-foreground">National Operations Platform</div>
         </div>
       </div>
@@ -73,14 +75,17 @@ export function AppSidebar() {
           ALL SYSTEMS OPERATIONAL
         </div>
         <div className="mt-3 space-y-1 text-[11px] text-muted-foreground">
-          <div className="flex justify-between">
-            <span>API</span>
-            <span className="font-mono">FastAPI · v0.4</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Spatial index</span>
-            <span className="font-mono">H3 · res 9</span>
-          </div>
+
+          <button
+            onClick={() => {
+              api.startSimulation().then(() => {
+                alert("Simulated backend fleet activated! Watch the dashboard metrics scale.");
+              });
+            }}
+            className="mt-3 w-full group relative inline-flex items-center justify-center gap-1.5 rounded-md border border-warning/30 bg-warning/10 px-3 py-1.5 text-xs font-medium text-warning hover:bg-warning/20 transition-colors shadow-sm"
+          >
+            Start Demo Map Simulation
+          </button>
         </div>
       </div>
     </aside>
@@ -90,7 +95,7 @@ export function AppSidebar() {
 export function MobileNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   return (
-    <nav className="flex gap-1 overflow-x-auto border-b border-border bg-sidebar/70 backdrop-blur-xl px-3 py-2 lg:hidden">
+    <nav className="flex gap-1 overflow-x-auto border-b border-border bg-sidebar backdrop-blur-2xl px-3 py-2 lg:hidden">
       {NAV.map(({ to, label, icon: Icon }) => {
         const active = to === "/" ? pathname === "/" : pathname.startsWith(to);
         return (

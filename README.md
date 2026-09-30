@@ -33,3 +33,18 @@ cd urban-sense-live-main
 npm install
 npm run dev
 ```
+
+## Model Statistics
+
+### 1. Pothole Detection (original YOLO v11 model)
+- **Precision:** 56.0% (0.55973)
+- **Recall:** 54.3% (0.54333)
+- **mAP50:** 54.6% (0.54613)
+- **mAP50-95:** 32.2% (0.32211)
+
+### 2. Vehicle Detection & Tracking (vehicledetection_bytetrack - YOLO 11n)
+- **Precision:** 80.0% (0.80042)
+- **Recall:** 49.9% (0.49885)
+- **mAP50:** 57.9% (0.57854)
+- **mAP50-95:** 38.6% (0.38585)
+

@@ -20,6 +20,17 @@ export interface PotholeIncident {
   timestamp?: string;
   image_url?: string;
   bbox?: [number, number, number, number];
+  track_id?: number;
+  event_id?: string;
+  camera_id?: string;
+  evidence?: any;
+
+  // SLA tracking
+  status: "open" | "acknowledged" | "resolved";
+  resolution_photo_path?: string;
+  escalated: boolean;
+  acknowledged_at?: string;
+  resolved_at?: string;
 }
 
 async function get<T>(path: string, fallback: T): Promise<T> {
@@ -43,6 +54,18 @@ export const api = {
       return await res.json();
     } catch {
       return fallback;
+    }
+  },
+
+  /** POST /api/v1/simulation/start — Triggers FastAPI background fleet */
+  startSimulation: async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/v1/simulation/start`, {
+        method: "POST"
+      });
+      return await res.json();
+    } catch {
+      return null;
     }
   },
 

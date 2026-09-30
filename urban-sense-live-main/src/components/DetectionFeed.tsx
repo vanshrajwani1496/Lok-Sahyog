@@ -4,7 +4,7 @@ import { TYPE_LABEL } from "@/lib/mockData";
 import { shortH3 } from "@/lib/h3Utils";
 import type { DetectionEvent } from "@/lib/types";
 import { StatusDot } from "./StatusBadge";
-import { cn } from "@/lib/utils";
+import { cn, getAreaName, getStreetName } from "@/lib/utils";
 import { MapPin } from "lucide-react";
 
 export function relativeTime(ts: string, now: number) {
@@ -25,9 +25,11 @@ const DOT: Record<string, string> = {
 export function DetectionFeed({
   height = 460,
   events,
+  title,
 }: {
   height?: number;
   events?: DetectionEvent[];
+  title?: string;
 }) {
   const store = useStore();
   const [selectedBus, setSelectedBus] = useState<string>("all");
@@ -39,16 +41,20 @@ export function DetectionFeed({
   }, [store.events]);
 
   const list = useMemo(() => {
-    const source = events ?? store.events;
+    let source = events ?? store.events;
+    if (!events && store.selectedZoneId) {
+      source = source.filter(e => e.h3Index === store.selectedZoneId);
+    }
     if (selectedBus === "all") return source;
     return source.filter(e => e.busId === selectedBus);
-  }, [events, store.events, selectedBus]);
+  }, [events, store.events, selectedBus, store.selectedZoneId]);
 
   const groupedEvents = useMemo(() => {
     const map = new Map<string, DetectionEvent[]>();
     for (const e of list) {
-      if (!map.has(e.h3Index)) map.set(e.h3Index, []);
-      map.get(e.h3Index)!.push(e);
+      const key = `${e.h3Index}-${e.type}`;
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(e);
     }
     return Array.from(map.entries())
       .map(([h3, group]) => ({ h3, group, latest: group[0]! }))
@@ -76,7 +82,9 @@ export function DetectionFeed({
   return (
     <section className="panel flex flex-col overflow-hidden">
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
-        <h2 className="text-sm font-semibold tracking-wide uppercase">Live AI Detections</h2>
+        <h2 className="text-sm font-semibold tracking-wide uppercase">
+          {title ? title : (store.selectedZoneId ? `Detections in ${getAreaName(store.selectedZoneId)}` : "Live Detections")}
+        </h2>
         <span className="flex items-center gap-1.5 text-[11px] font-medium text-success uppercase">
           <StatusDot tone="success" pulse /> Live
         </span>
@@ -122,28 +130,55 @@ export function DetectionFeed({
                   )}
                 </span>
               </div>
-              <div className="mt-2 flex items-center justify-between">
-                <div className="font-mono text-[11px] text-muted-foreground">
-                  H3 {shortH3(h3)} · {relativeTime(latest.timestamp, now)}
+              <div className="mt-2 flex flex-col gap-2">
+                <div className="grid grid-cols-2 gap-y-1 gap-x-4 text-[11px] text-muted-foreground">
+                  <div><span className="font-semibold text-foreground">Location:</span> {getStreetName(latest.h3Index)}</div>
+                  <div><span className="font-semibold text-foreground">Zone:</span> {getAreaName(latest.h3Index)}</div>
+                  <div><span className="font-semibold text-foreground">Time:</span> {new Date(latest.timestamp).toLocaleTimeString("en-US", { hour: '2-digit', minute: '2-digit' })}</div>
+                  <div><span className="font-semibold text-foreground">Status:</span> <span className="capitalize">{latest.status}</span></div>
                 </div>
-                <div className="flex items-center gap-2">
-                  {group.length > 1 && (
+
+                {(latest.trackId || latest.evidence) && (
+                  <div className="mt-2 flex flex-col gap-1 border-t border-border/50 pt-2">
+                    {latest.trackId !== undefined && (
+                      <div className="text-[10px] text-muted-foreground">
+                        <span className="font-semibold">TRACKING ID:</span> REF-{latest.trackId}
+                      </div>
+                    )}
+                    {latest.evidence && (
+                      <div className="text-[10px] bg-primary/5 p-1.5 rounded border border-primary/20 text-primary flex items-center">
+                        <div className="font-black uppercase tracking-widest mr-2 text-[9px]">EVIDENCE:</div>
+                        <div>
+                          {latest.evidence.vehicle_count && `${latest.evidence.vehicle_count} vehicles present within bounding volume`}
+                          {latest.evidence.displacement && `Displacement factor: ${latest.evidence.displacement.toFixed(3)} (Stagnant trajectory)`}
+                          {latest.evidence.nearby_vehicle_count && `${latest.evidence.nearby_vehicle_count} localized kinetic intersections tracked`}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between">
+                  <div />
+                  <div className="flex items-center gap-2">
+                    {group.length > 1 && (
+                      <button
+                        onClick={(e) => toggleExpand(h3, e)}
+                        className="flex items-center gap-1 rounded bg-surface-2 border border-border px-1.5 py-0.5 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        {expanded.has(h3) ? "HIDE DETAILS" : "VIEW SCORES"}
+                      </button>
+                    )}
                     <button
-                      onClick={(e) => toggleExpand(h3, e)}
-                      className="flex items-center gap-1 rounded bg-surface-2 border border-border px-1.5 py-0.5 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+                      onClick={(err) => {
+                        err.stopPropagation();
+                        window.open(`https://www.google.com/maps/search/?api=1&query=${latest.latitude},${latest.longitude}`, "_blank");
+                      }}
+                      className="flex items-center gap-1 rounded bg-surface-2 border border-border px-1.5 py-0.5 text-[10px] text-muted-foreground hover:text-foreground hover:border-primary/50 transition-colors"
                     >
-                      {expanded.has(h3) ? "HIDE DETAILS" : "VIEW SCORES"}
+                      <MapPin className="size-3" /> MAP
                     </button>
-                  )}
-                  <button
-                    onClick={(err) => {
-                      err.stopPropagation();
-                      window.open(`https://www.google.com/maps/search/?api=1&query=${latest.latitude},${latest.longitude}`, "_blank");
-                    }}
-                    className="flex items-center gap-1 rounded bg-surface-2 border border-border px-1.5 py-0.5 text-[10px] text-muted-foreground hover:text-foreground hover:border-primary/50 transition-colors"
-                  >
-                    <MapPin className="size-3" /> MAP
-                  </button>
+                  </div>
                 </div>
               </div>
               {/* Expandable Feed for Individual Scores */}
@@ -166,7 +201,7 @@ export function DetectionFeed({
         ))}
         {groupedEvents.length === 0 && (
           <div className="px-4 py-8 text-center text-xs text-muted-foreground">
-            No detections match the current filters.
+            No detections recorded in this zone.
           </div>
         )}
       </div>

@@ -2,6 +2,8 @@ import type { LucideIcon } from "lucide-react";
 import { AlertTriangle, Bus, Gauge, Hexagon, TriangleAlert } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
+import type { DetectionEvent } from "@/lib/types";
+import { computeSafety } from "@/lib/scoring";
 
 function KPICard({
   label,
@@ -45,15 +47,19 @@ function KPICard({
   );
 }
 
-export function KPIGrid() {
-  const { buses, events, zones, safety, todayCount, prevTodayCount } = useStore();
+export function KPIGrid({ events }: { events: DetectionEvent[] }) {
+  const { buses, zones } = useStore();
+  const startOfDay = new Date().setHours(0, 0, 0, 0);
+  const todayCount = events.filter(e => new Date(e.timestamp).getTime() >= startOfDay).length;
+
   const activeBuses = buses.filter((b) => b.status === "online").length;
   const openAlerts = events.filter((e) => e.status === "open").length;
   const highPriority = events.filter(
     (e) => e.status === "open" && (e.severity === "high" || e.severity === "critical"),
   ).length;
-  const monitored = zones.length;
-  const changed = todayCount !== prevTodayCount;
+
+  const monitored = new Set(events.map(e => e.h3Index)).size;
+  const safety = computeSafety(events, zones);
 
   return (
     <div className="grid grid-cols-2 gap-3 xl:grid-cols-5">
@@ -61,10 +67,9 @@ export function KPIGrid() {
       <KPICard
         label="Detections Today"
         value={todayCount}
-        delta={changed ? `${prevTodayCount} → ${todayCount} live` : "Total multi-hazard cases"}
-        deltaTone={changed ? "warning" : "success"}
+        delta={"Total multi-hazard cases"}
+        deltaTone={"success"}
         icon={TriangleAlert}
-        {...(changed ? { highlight: true } : {})}
       />
       <KPICard
         label="Active Road Alerts"
@@ -73,7 +78,7 @@ export function KPIGrid() {
         deltaTone="critical"
         icon={AlertTriangle}
       />
-      <KPICard label="Monitored Zones" value={monitored} delta="H3 cells · res 9" deltaTone="muted" icon={Hexagon} />
+      <KPICard label="Monitored Zones" value={monitored} delta="Active surveillance areas" deltaTone="muted" icon={Hexagon} />
       <KPICard
         label="City Safety Score"
         value={`${safety.overall}/100`}
