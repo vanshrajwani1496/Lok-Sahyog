@@ -1,6 +1,6 @@
-# Lok-Sahyog Multi-Hazard Platform
+# Urban-Sense Multi-Hazard Platform
 
-Lok-Sahyog is an AI-powered urban infrastructure analysis platform designed for edge-to-cloud road hazard detection. It dynamically detects potholes, waterlogging, damaged signage, and vehicles using parallel YOLO neural networks.
+Urban-Sense is an AI-powered urban infrastructure analysis platform designed for edge-to-cloud road hazard detection. It dynamically detects potholes, waterlogging, damaged signage, and vehicles using parallel YOLO neural networks.
 
 ## Repository Structure
 - `/pothole_backend`: FastAPI Cloud Gateway & Supabase Postgres Models
@@ -9,7 +9,7 @@ Lok-Sahyog is an AI-powered urban infrastructure analysis platform designed for 
 
 ## 🚀 SIH Judge Evaluation: How to Run the Project
 
-Welcome! This system is designed for a seamless local evaluation of the **Lok-Sahyog Edge-to-Cloud multi-hazard mapping project**. You will need three separate terminal windows to run all structural layers of the stack.
+Welcome! This system is designed for a seamless local evaluation of the **Urban-Sense Edge-to-Cloud multi-hazard mapping project**. You will need three separate terminal windows to run all structural layers of the stack.
 
 ### 1. Cloud Server (FastAPI Backend)
 The backend acts as the data telemetry receiver and manages spatial state across cities. It uses an off-site Supabase Postgres Database that has already been seeded with spatial data.
@@ -95,7 +95,7 @@ Navigate to `cd VehicleDetection_ByteTrack` and run these sequentially if you wa
 2. **Base YOLO11n Training:** `python training.py`
 3. **Controlled Fine-Tuning (AdamW):** `python fine_tuning.py`
 4. **Standalone Inference:** `python inference.py`
-5. **Lok-Sahyog Live Deployment:** Send incidents to the centralized dashboard using:
+5. **Urban-Sense Live Deployment:** Send incidents to the centralized dashboard using:
    ```bash
    python inference.py --source 0 --server http://localhost:8000/api/v1/telemetry --bus-id "ME (Demo Camera)" --latitude 17.3770 --longitude 78.4730
    ```
