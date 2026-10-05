@@ -47,6 +47,24 @@ python inference.py --source http://<YOUR_PHONE_IP>:8080/video
 
 > Note: To test the telemetry dashboard flowing without keeping your webcam active, you can optionally invoke our telemetry mock traffic generator in the browser: `http://localhost:8000/api/v1/simulation/start`.
 
+## Model Lifecycle (Training, Validation & Export)
+
+To independently train, validate, or export the object detection models used in this platform, you can use the provided utility scripts:
+
+```bash
+# 1. Train the Pothole Model
+# You can customize parameters, or rely on defaults (50 epochs, batch 16, yolo11n.pt)
+python train.py --data dataset.yaml --epochs 50 --batch 16 --model yolo11n.pt
+
+# 2. Validate a Trained Model
+# Calculates metrics (Precision, Recall, mAP) and extracts the validation matrix
+python run_val.py
+
+# 3. Export the Model for Edge
+# Export to optimized formats like ONNX, TFLite, or OpenVINO with INT8 quantization
+python export.py --weights yolo11n.pt --format onnx --int8
+```
+
 ## Model Statistics
 
 ### 1. Pothole Detection (original YOLO v11 model)
@@ -60,4 +78,25 @@ python inference.py --source http://<YOUR_PHONE_IP>:8080/video
 - **Recall:** 49.9% (0.49885)
 - **mAP50:** 57.9% (0.57854)
 - **mAP50-95:** 38.6% (0.38585)
+
+---
+
+## 🚗 Vehicle incident AI (IDD YOLO11n)
+
+The `/VehicleDetection_ByteTrack` directory contains an end-to-end computer vision pipeline for traffic scene understanding in unstructured Indian road conditions (trained on the **India Driving Dataset**).
+
+### Dataset Preparation
+Download the dataset from [Kaggle](https://www.kaggle.com/datasets/redzapdos123/indian-driving-dataset-detections-yolov11), then extract and place the dataset split folders — `train/`, `val/`, and `test/` — directly into the `/VehicleDetection_ByteTrack` directory before running scripts.
+
+### Vehicle Pipeline Execution
+Navigate to `cd VehicleDetection_ByteTrack` and run these sequentially if you want to rebuild the model:
+
+1. **Clean Dataset & Verify Schema:** `python cleaning_IDD.py`
+2. **Base YOLO11n Training:** `python training.py`
+3. **Controlled Fine-Tuning (AdamW):** `python fine_tuning.py`
+4. **Standalone Inference:** `python inference.py`
+5. **Lok-Sahyog Live Deployment:** Send incidents to the centralized dashboard using:
+   ```bash
+   python inference.py --source 0 --server http://localhost:8000/api/v1/telemetry --bus-id "ME (Demo Camera)" --latitude 17.3770 --longitude 78.4730
+   ```
 
