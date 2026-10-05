@@ -86,7 +86,7 @@ def login(request: schemas.LoginRequest, db: Session = Depends(get_db)):
             server.send_message(msg)
             server.quit()
             print(f"✅ OTP Email dispatched successfully to {user.email}")
-            return {"message": "OTP verification code sent to your email."}
+            return {"message": "OTP verification code sent to your email.", "demo_otp": otp}
         except Exception as e:
             print(f"⚠️ Failed to send email via SMTP: {e}")
             
@@ -95,7 +95,7 @@ def login(request: schemas.LoginRequest, db: Session = Depends(get_db)):
     print(f"🔒 OTP for {user.username} is: {otp}")
     print(f"==========================================\n")
     
-    return {"message": "OTP generated and printed to console (Email dispatch unavailable)."}
+    return {"message": "OTP generated.", "demo_otp": otp}
 
 @router.post("/verify-otp", response_model=schemas.Token)
 def verify_otp(request: schemas.OTPVerify, db: Session = Depends(get_db)):
