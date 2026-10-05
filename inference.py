@@ -66,7 +66,7 @@ def run_inference(model_path=r'runs\detect\runs\train\sih_pothole_model-7\weight
     
     print("Loading secondary companion model (IDD Vehicle Tracker)...")
     # Bind directly to the unified ByteTrack architecture
-    model_vehicles = YOLO(r'VehicleDetection_ByteTrack\runs\detect\sih_incident_ai\yolo11n_idd_8cls\weights\best.pt')
+    model_vehicles = YOLO(r'VehicleDetection_ByteTrack\runs\detect\sih_incident_ai\yolo11n_idd_8cls_run2-3\weights\best.pt')
     
     # RELAXED DEMO PARAMETERS: 
     # Since our laptop webcams rarely view a full avenue, drop the congestion trigger down 
