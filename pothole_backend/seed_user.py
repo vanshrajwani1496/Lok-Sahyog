@@ -8,28 +8,35 @@ load_dotenv()
 
 CITIES_DATA = [
     {"id": "MUM", "name": "Mumbai (BMC)", "lat": 19.0760, "lng": 72.8777, "base_score": 62, "zones": [
-        {"name": "Bandra", "h3_index": "8860145881fffff", "lat": 19.0596, "lng": 72.8295},
-        {"name": "Andheri", "h3_index": "8860145883fffff", "lat": 19.1136, "lng": 72.8697},
-        {"name": "Colaba", "h3_index": "8860145885fffff", "lat": 18.9067, "lng": 72.8147}
+        {"name": "Island City", "h3_index": "8860145881fffff", "lat": 18.9067, "lng": 72.8147},
+        {"name": "Western Suburbs", "h3_index": "8860145883fffff", "lat": 19.1136, "lng": 72.8697},
+        {"name": "Eastern Suburbs", "h3_index": "8860145885fffff", "lat": 19.0553, "lng": 72.9022}
     ]},
     {"id": "HYD", "name": "Hyderabad (GHMC)", "lat": 17.3850, "lng": 78.4867, "base_score": 75, "zones": [
         {"name": "Khairatabad", "h3_index": "8860145887fffff", "lat": 17.4124, "lng": 78.4552},
         {"name": "Charminar", "h3_index": "8860145889fffff", "lat": 17.3616, "lng": 78.4747},
-        {"name": "Kukatpally", "h3_index": "886014588bfffff", "lat": 17.4948, "lng": 78.3996}
+        {"name": "Secunderabad", "h3_index": "886014588bfffff", "lat": 17.4399, "lng": 78.4983},
+        {"name": "Kukatpally", "h3_index": "886014588dfffff", "lat": 17.4849, "lng": 78.4069},
+        {"name": "Serilingampally", "h3_index": "886014588ffffff", "lat": 17.4800, "lng": 78.3200},
+        {"name": "LB Nagar", "h3_index": "88601458a1fffff", "lat": 17.3457, "lng": 78.5522}
     ]},
     {"id": "DEL", "name": "New Delhi (NDMC)", "lat": 28.6139, "lng": 77.2090, "base_score": 45, "zones": [
-        {"name": "Connaught Place", "h3_index": "88601458a1fffff", "lat": 28.6304, "lng": 77.2177},
-        {"name": "Vasant Kunj", "h3_index": "88601458a3fffff", "lat": 28.5293, "lng": 77.1539}
+        {"name": "NDMC", "h3_index": "88601458a3fffff", "lat": 28.6304, "lng": 77.2177},
+        {"name": "South Delhi", "h3_index": "88601458a5fffff", "lat": 28.5293, "lng": 77.1539},
+        {"name": "North Delhi", "h3_index": "88601458a7fffff", "lat": 28.7041, "lng": 77.1025},
+        {"name": "East Delhi", "h3_index": "88601458a9fffff", "lat": 28.6258, "lng": 77.2913},
+        {"name": "West Delhi", "h3_index": "88601458abfffff", "lat": 28.6473, "lng": 77.0864},
+        {"name": "Central Delhi", "h3_index": "88601458adfffff", "lat": 28.6465, "lng": 77.2442}
     ]},
     {"id": "BLR", "name": "Bengaluru (BBMP)", "lat": 12.9716, "lng": 77.5946, "base_score": 68, "zones": [
-        {"name": "Koramangala", "h3_index": "88601458a5fffff", "lat": 12.9352, "lng": 77.6245},
-        {"name": "Indiranagar", "h3_index": "88601458a7fffff", "lat": 12.9784, "lng": 77.6408}
+        {"name": "Koramangala", "h3_index": "88601458affffff", "lat": 12.9352, "lng": 77.6245},
+        {"name": "Indiranagar", "h3_index": "88601458b1fffff", "lat": 12.9784, "lng": 77.6408}
     ]},
     {"id": "PUN", "name": "Pune (PMC)", "lat": 18.5204, "lng": 73.8567, "base_score": 71, "zones": [
-        {"name": "Koregaon Park", "h3_index": "88601458a9fffff", "lat": 18.5362, "lng": 73.8939}
+        {"name": "Koregaon Park", "h3_index": "88601458b3fffff", "lat": 18.5362, "lng": 73.8939}
     ]},
     {"id": "CHE", "name": "Chennai (GCC)", "lat": 13.0827, "lng": 80.2707, "base_score": 78, "zones": [
-        {"name": "T Nagar", "h3_index": "88601458abfffff", "lat": 13.0418, "lng": 80.2341}
+        {"name": "T Nagar", "h3_index": "88601458b5fffff", "lat": 13.0418, "lng": 80.2341}
     ]}
 ]
 

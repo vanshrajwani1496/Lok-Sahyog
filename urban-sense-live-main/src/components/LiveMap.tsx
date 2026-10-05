@@ -78,14 +78,6 @@ export function LiveMap({
     );
   }, [store.zones, visible]);
 
-  const project = (lat: number, lng: number) => {
-    const cellLat = 0.0032;
-    const cellLng = 0.0034;
-    const y = (lat - 17.3770) / cellLat;
-    const x = (lng - 78.4730) / cellLng - y / 2;
-    return hexPixel(x, y, SIZE);
-  };
-
   const selectedZone = store.selectedZoneId ? store.zones.find(z => z.h3Index === store.selectedZoneId) : null;
   // Fallback to static absolute coordinate values if the zone is empty and the user selected it by exact name string
   const staticFallback = store.selectedZoneId ? store.zones.find(z => (z.name || getAreaName(z.h3Index)) === store.selectedZoneId) : null;
@@ -97,6 +89,14 @@ export function LiveMap({
   const centerLat = selectedZone ? selectedZone.center.lat : (staticFallback ? staticFallback.center.lat : (visible[0] ? visible[0].latitude : defaultLat));
   const centerLng = selectedZone ? selectedZone.center.lng : (staticFallback ? staticFallback.center.lng : (visible[0] ? visible[0].longitude : defaultLng));
   const bbox = `${centerLng - 0.038},${centerLat - 0.030},${centerLng + 0.038},${centerLat + 0.030}`;
+
+  const project = (lat: number, lng: number) => {
+    const cellLat = 0.0032;
+    const cellLng = 0.0034;
+    const y = (lat - centerLat) / cellLat;
+    const x = (lng - centerLng) / cellLng - y / 2;
+    return hexPixel(x, y, SIZE);
+  };
 
   const focusPx = project(centerLat, centerLng);
   const vWidth = 2400;
