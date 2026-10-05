@@ -21,6 +21,9 @@ DEVICE_ID = "Proto-Node-1"
 SIMULATED_LAT = 17.3770  # Begum Bazar
 SIMULATED_LON = 78.4730
 
+current_lat = 0.0
+current_lon = 0.0
+
 def get_h3_index(lat, lon, resolution=10):
     # Using actual Uber H3 native integration
     return h3.latlng_to_cell(lat, lon, resolution) if hasattr(h3, 'latlng_to_cell') else h3.geo_to_h3(lat, lon, resolution)
@@ -89,6 +92,7 @@ def run_inference(model_path=r'runs\detect\runs\train\sih_pothole_model-7\weight
         print(f"Could not fetch live GPS. Defaulting to Charminar. {e}")
         base_lat, base_lon = (17.3616, 78.4747)
         
+    global current_lat, current_lon
     current_lat = base_lat
     current_lon = base_lon
     
@@ -208,17 +212,36 @@ def run_inference(model_path=r'runs\detect\runs\train\sih_pothole_model-7\weight
     cap.release()
     cv2.destroyAllWindows()
 
+def nmea_to_dec(value, dir):
+    if not value or not dir: return 0.0
+    try:
+        dot_idx = value.find('.')
+        if dot_idx == -1: return 0.0
+        deg_len = dot_idx - 2
+        dec = float(value[:deg_len]) + float(value[deg_len:]) / 60.0
+        if dir in ['S', 'W']: dec = -dec
+        return dec
+    except:
+        return 0.0
+
 def start_gps_daemon(port):
     import serial
+    global current_lat, current_lon
     print(f"Starting hardware GPS daemon on port {port}...")
     try:
         ser = serial.Serial(port, baudrate=9600, timeout=1)
         while True:
-            line = ser.readline().decode('ascii', errors='replace')
-            if line.startswith('$GPRMC') or line.startswith('$GPGGA'):
-                # Hardcore exact extraction logic here to parse NMEA and override global coords
-                # For this prototype, if it reads live physical vectors, it will update globally
-                pass 
+            line = ser.readline().decode('ascii', errors='replace').strip()
+            if line.startswith('$GPGGA'):
+                parts = line.split(',')
+                if len(parts) >= 6:
+                    lat_val, lat_dir = parts[2], parts[3]
+                    lon_val, lon_dir = parts[4], parts[5]
+                    lat = nmea_to_dec(lat_val, lat_dir)
+                    lon = nmea_to_dec(lon_val, lon_dir)
+                    if lat != 0.0 and lon != 0.0:
+                        current_lat = lat
+                        current_lon = lon
     except Exception as e:
         print(f"GPS Hardware failed: {e}")
 

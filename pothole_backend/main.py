@@ -177,7 +177,7 @@ def process_telemetry(payload: PotholePayload, db: Session = Depends(get_db)):
 
 @app.post("/api/v1/potholes/{hex_id}/image")
 async def upload_image(hex_id: str, file: UploadFile = File(...), db: Session = Depends(get_db)):
-    incident = db.query(models.PotholeIncident).filter_by(h3_index=hex_id).first()
+    incident = db.query(models.PotholeIncident).filter_by(h3_index=hex_id).order_by(models.PotholeIncident.created_at.desc()).first()
     if not incident:
         raise HTTPException(status_code=404, detail="Incident not found")
 
