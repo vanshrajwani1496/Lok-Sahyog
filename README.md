@@ -7,32 +7,45 @@ Lok-Sahyog is an AI-powered urban infrastructure analysis platform designed for 
 - `/urban-sense-live-main`: React / TypeScript interactive interactive Map Dashboard
 - `inference.py`: Edge Node inference loop utilizing YOLO tracking.
 
-## Quick Start Guide
+## 🚀 SIH Judge Evaluation: How to Run the Project
 
-### 1. Edge Inference (AI Node)
-Ensure you have Python 3.11 installed.
+Welcome! This system is designed for a seamless local evaluation of the **Lok-Sahyog Edge-to-Cloud multi-hazard mapping project**. You will need three separate terminal windows to run all structural layers of the stack.
+
+### 1. Cloud Server (FastAPI Backend)
+The backend acts as the data telemetry receiver and manages spatial state across cities. It uses an off-site Supabase Postgres Database that has already been seeded with spatial data.
 ```bash
-# Install dependencies
-pip install -r requirements.txt
-
-# Run the Inference Engine (using IP WebCam or 0 for local webcam)
-python inference.py --source http://<YOUR_PHONE_IP>:8080/video
-```
-
-### 2. Cloud Server (FastAPI Backend)
-Runs the telemetry receiver and fleet simulator.
-```bash
+# Terminal Window 1
 cd pothole_backend
+pip install -r requirements.txt
+# Start the Uvicorn cloud gateway
 python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-### 3. Web Dashboard (React)
-Runs the interactive H3 Hexagonal overlay map.
+### 2. Web Dashboard (React)
+The immersive analytical dashboard mapping telemetry data via real-time hexagonal grids.
 ```bash
+# Terminal Window 2
 cd urban-sense-live-main
 npm install
 npm run dev
 ```
+> **Seamless Authentication:** Open `localhost:5173`. When accessing the platform, click one of the pre-configured **Restricted Regional Instances (Demo) Cards** for instant credentials. Click *Initialize Session*. The application will **securely auto-fill the dynamically generated 6-digit Multi-Factor SMS code** from the server to bypass manual logging!
+
+### 3. Edge Inference Engine (AI Node)
+To test the custom deep learning models running natively, launch the localized Python prototype daemon which parallel-processes the custom trained **YOLOv11 Pothole Detector** and the baseline **ByteTrack Vehicle Object Detector**.
+
+```bash
+# Terminal Window 3 (ensure your Python virtual environment is active)
+pip install -r requirements.txt
+
+# Option A: Run using your laptop's integrated Webcam
+python inference.py --source 0
+
+# Option B: Run using an IP Webcam (if you prefer phone mounting)
+python inference.py --source http://<YOUR_PHONE_IP>:8080/video
+```
+
+> Note: To test the telemetry dashboard flowing without keeping your webcam active, you can optionally invoke our telemetry mock traffic generator in the browser: `http://localhost:8000/api/v1/simulation/start`.
 
 ## Model Statistics
 
