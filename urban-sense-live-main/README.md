@@ -1621,17 +1621,17 @@ Charts must update when appropriate.
 
 The final result should look like a real operational Smart City Command Centre, while honestly showing that pothole detection is the currently implemented AI module and the remaining detection categories are the next modules to integrate.
 
-This project was built with [Lovable](https://lovable.dev).
+This project was built with [Core](https://core.dev).
 
-**Live app**: https://urban-sense-live.lovable.app
+**Live app**: https://urban-sense-live.core.app
 
-## Build with Lovable
+## Build with Core
 
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/0ba68900-594d-4945-980c-6bb34a6422e3).
+Continue developing this project in the [Core editor](https://core.dev/projects/0ba68900-594d-4945-980c-6bb34a6422e3).
 
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
+- **Ship faster**: describe what you want to build and Core handles the code.
+- **Stay in sync**: every change made in Core is committed straight to this repository.
+- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Core, ready for your next prompt.
 
 ## Development
 

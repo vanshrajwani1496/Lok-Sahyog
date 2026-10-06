@@ -11,7 +11,7 @@ class HazardDetection(BaseModel):
     type: str
     bbox: List[float]
 
-class BusTelemetryEvent(BaseModel):
+class BusDataStreamEvent(BaseModel):
     """
     Refactored schema matching the explicit JSON provided, event-driven per pothole.
     """

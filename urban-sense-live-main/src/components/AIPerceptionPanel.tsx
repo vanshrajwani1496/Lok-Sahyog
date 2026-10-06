@@ -22,7 +22,7 @@ export function AIPerceptionPanel() {
   return (
     <section className="panel p-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold tracking-wide uppercase">Operational Telemetry</h2>
+        <h2 className="text-sm font-semibold tracking-wide uppercase">Operational DataStream</h2>
         <span className="flex items-center gap-1.5 text-[11px] font-medium text-success uppercase">
           <StatusDot tone="success" pulse /> Syncing
         </span>

@@ -2,8 +2,8 @@ from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
-@app.route('/api/telemetry', methods=['POST'])
-def receive_telemetry():
+@app.route('/api/data_stream', methods=['POST'])
+def receive_data_stream():
     data = request.json
     if not data:
         return jsonify({"error": "Invalid JSON"}), 400
@@ -17,7 +17,7 @@ def receive_telemetry():
     print(f"Confidence: {pothole.get('confidence')} | Bounding Box: {pothole.get('bbox')}")
     # Integration ready: This data would typically be streamed to PostgreSQL/SQLite or WebSockets here
     
-    return jsonify({"status": "delivered", "message": "Telemetry received layout successfully"}), 200
+    return jsonify({"status": "delivered", "message": "DataStream received layout successfully"}), 200
 
 if __name__ == '__main__':
     print("Starting Mock Dashboard Server for SIH26124 Prototype on port 5000...")

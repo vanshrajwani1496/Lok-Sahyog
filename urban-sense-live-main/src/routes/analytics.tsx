@@ -122,7 +122,7 @@ function AnalyticsPage() {
                                     <Bar dataKey="detections" fill="var(--color-chart-1)" radius={[3, 3, 0, 0]} />
                                 </BarChart>
                             </ResponsiveContainer>
-                        ) : <span className="text-sm font-semibold text-muted-foreground">Insufficient Telemetry Pipeline</span>}
+                        ) : <span className="text-sm font-semibold text-muted-foreground">Insufficient DataStream Pipeline</span>}
                     </div>
                 </section>
 
@@ -148,7 +148,7 @@ function AnalyticsPage() {
                                     ))}
                                 </div>
                             </>
-                        ) : <span className="text-sm font-semibold text-muted-foreground">Insufficient Telemetry Pipeline</span>}
+                        ) : <span className="text-sm font-semibold text-muted-foreground">Insufficient DataStream Pipeline</span>}
                     </div>
                 </section>
 
@@ -165,7 +165,7 @@ function AnalyticsPage() {
                                     <Line type="monotone" dataKey="detections" stroke="var(--color-chart-2)" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
                                 </LineChart>
                             </ResponsiveContainer>
-                        ) : <span className="text-sm font-semibold text-muted-foreground">Insufficient Telemetry Pipeline</span>}
+                        ) : <span className="text-sm font-semibold text-muted-foreground">Insufficient DataStream Pipeline</span>}
                     </div>
                 </section>
 

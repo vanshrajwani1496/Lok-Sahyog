@@ -69,23 +69,23 @@ export const api = {
     }
   },
 
-  /** POST /api/v1/telemetry — Sends detection telemetry to FastAPI */
-  sendTelemetry: async (payload: any) => {
+  /** POST /api/v1/data_stream — Sends detection data_stream to FastAPI */
+  sendDataStream: async (payload: any) => {
     if (USE_MOCK) return { status: "mock_success" };
     try {
-      const res = await fetch(`${API_URL}/api/v1/telemetry`, {
+      const res = await fetch(`${API_URL}/api/v1/data_stream`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
       return await res.json();
     } catch (err) {
-      console.error("Telemetry upload error:", err);
+      console.error("DataStream upload error:", err);
       return null;
     }
   },
 
-  /** Existing Lovable endpoints */
+  /** Existing Core endpoints */
   events: (fallback: DetectionEvent[]) => get("/api/events", fallback),
   recentEvents: (fallback: DetectionEvent[]) => get("/api/events/recent", fallback),
   buses: (fallback: Bus[]) => get("/api/buses", fallback),

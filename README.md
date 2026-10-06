@@ -12,7 +12,7 @@ Urban-Sense is an AI-powered urban infrastructure analysis platform designed for
 Welcome! This system is designed for a seamless local evaluation of the **Urban-Sense Edge-to-Cloud multi-hazard mapping project**. You will need three separate terminal windows to run all structural layers of the stack.
 
 ### 1. Cloud Server (FastAPI Backend)
-The backend acts as the data telemetry receiver and manages spatial state across cities. It uses an off-site Supabase Postgres Database that has already been seeded with spatial data.
+The backend acts as the data data_stream receiver and manages spatial state across cities. It uses an off-site Supabase Postgres Database that has already been seeded with spatial data.
 ```bash
 # Terminal Window 1
 cd pothole_backend
@@ -22,7 +22,7 @@ python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 ### 2. Web Dashboard (React)
-The immersive analytical dashboard mapping telemetry data via real-time hexagonal grids.
+The immersive analytical dashboard mapping data_stream data via real-time hexagonal grids.
 ```bash
 # Terminal Window 2
 cd urban-sense-live-main
@@ -45,7 +45,7 @@ python inference.py --source 0
 python inference.py --source http://<YOUR_PHONE_IP>:8080/video
 ```
 
-> Note: To test the telemetry dashboard flowing without keeping your webcam active, you can optionally invoke our telemetry mock traffic generator in the browser: `http://localhost:8000/api/v1/simulation/start`.
+> Note: To test the data_stream dashboard flowing without keeping your webcam active, you can optionally invoke our data_stream mock traffic generator in the browser: `http://localhost:8000/api/v1/simulation/start`.
 
 ## Model Lifecycle (Training, Validation & Export)
 
@@ -97,6 +97,6 @@ Navigate to `cd VehicleDetection_ByteTrack` and run these sequentially if you wa
 4. **Standalone Inference:** `python inference.py`
 5. **Urban-Sense Live Deployment:** Send incidents to the centralized dashboard using:
    ```bash
-   python inference.py --source 0 --server http://localhost:8000/api/v1/telemetry --bus-id "ME (Demo Camera)" --latitude 17.3770 --longitude 78.4730
+   python inference.py --source 0 --server http://localhost:8000/api/v1/data_stream --bus-id "ME (Demo Camera)" --latitude 17.3770 --longitude 78.4730
    ```
 

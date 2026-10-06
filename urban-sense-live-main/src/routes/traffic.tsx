@@ -114,7 +114,7 @@ function TrafficPage() {
     <div>
       <PageHeader
         title="Traffic Intelligence"
-        subtitle="Congestion analytics derived from fleet telemetry and detection density. Heuristic analytics — no dedicated congestion model deployed yet."
+        subtitle="Congestion analytics derived from fleet data_stream and detection density. Heuristic analytics — no dedicated congestion model deployed yet."
       />
 
       <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">

@@ -92,7 +92,7 @@ def simulate_bus(route):
                 }
             }
             try:
-                requests.post('http://localhost:8000/api/v1/telemetry', json=payload, timeout=2)
+                requests.post('http://localhost:8000/api/v1/data_stream', json=payload, timeout=2)
             except Exception:
                 pass
         time.sleep(random.uniform(2, 5))
@@ -145,12 +145,12 @@ def get_cities(db: Session = Depends(get_db)):
 def get_city_zones(city_id: str, db: Session = Depends(get_db)):
     return db.query(models.MunicipalZone).filter(models.MunicipalZone.city_id == city_id).all()
 
-@app.post("/api/v1/telemetry")
-def process_telemetry(payload: PotholePayload, db: Session = Depends(get_db)):
+@app.post("/api/v1/data_stream")
+def process_data_stream(payload: PotholePayload, db: Session = Depends(get_db)):
     # Respect the edge-provided H3 index strictly to sync identically with the React UI
     hex_id = payload.location.h3_index
     
-    # Always create a new incident row to capture full visual telemetry trace in the UI dashboard
+    # Always create a new incident row to capture full visual data_stream trace in the UI dashboard
     new_incident = models.PotholeIncident(
         h3_index=hex_id,
         city_id=payload.city_id,

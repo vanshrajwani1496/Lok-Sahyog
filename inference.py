@@ -13,7 +13,7 @@ from urllib.request import Request, urlopen
 # Path binding so we can natively import the localized tracking architectures
 sys.path.append(os.path.abspath('VehicleDetection_ByteTrack'))
 from incident_ai import IncidentEngine
-from schema import BusTelemetryEvent, LocationDatapoint, HazardDetection
+from schema import BusDataStreamEvent, LocationDatapoint, HazardDetection
 
 # Mock device info
 DEVICE_ID = "Proto-Node-1"
@@ -29,7 +29,7 @@ def get_h3_index(lat, lon, resolution=10):
     return h3.latlng_to_cell(lat, lon, resolution) if hasattr(h3, 'latlng_to_cell') else h3.geo_to_h3(lat, lon, resolution)
 
 def send_bytetrack_incident(server_url, bus_id, camera_id, latitude, longitude, alert, detection):
-    """Send one alert using Lok-Sahyog's existing telemetry payload shape."""
+    """Send one alert using Lok-Sahyog's existing data_stream payload shape."""
     # Reuse event categories already understood by the existing dashboard.
     event_types = {
         "congestion": "traffic_congestion",
@@ -63,7 +63,7 @@ def send_bytetrack_incident(server_url, bus_id, camera_id, latitude, longitude, 
     except (requests.exceptions.RequestException) as error:
         print(f"Could not send incident to Lok-Sahyog: {error}")
 
-def run_inference(model_path=r'runs\detect\runs\train\sih_pothole_model-7\weights\last.pt', source='0', server_url='http://localhost:8000/api/v1/telemetry'):
+def run_inference(model_path=r'runs\detect\runs\train\sih_pothole_model-7\weights\last.pt', source='0', server_url='http://localhost:8000/api/v1/data_stream'):
     print(f"Loading primary hazard model {model_path}...")
     model_hazards = YOLO(model_path)
     
@@ -107,11 +107,12 @@ def run_inference(model_path=r'runs\detect\runs\train\sih_pothole_model-7\weight
         mock_bus_id = "ME (Demo Camera)"
             
         # 1. Run inference on custom hazards (Potholes, Signage, Waterlogging)
-        # Drop the base threshold to 0.15 so we can catch faint Damaged Signs, then filter manually below 
-        results_hazards = model_hazards(frame, verbose=False, conf=0.15)
+        # Added imgsz=640 (standardize scale), augment=True (TTA boosts recall), 
+        # iou=0.45 (strict NMS prevents duplicate boxes), and half=True (FP16 speeds up augment)
+        results_hazards = model_hazards(frame, verbose=False, conf=0.15, imgsz=640, augment=True, iou=0.45, half=True)
         
         # 2. Run stateful inference on IDD traffic elements via ByteTrack
-        results_vehicles = model_vehicles.track(frame, verbose=False, conf=0.25, persist=True, tracker="bytetrack.yaml")
+        results_vehicles = model_vehicles.track(frame, verbose=False, conf=0.25, persist=True, tracker="bytetrack.yaml", imgsz=640, augment=True, iou=0.50, half=True)
         
         # Process structural hazards
         for r in results_hazards:
@@ -144,7 +145,7 @@ def run_inference(model_path=r'runs\detect\runs\train\sih_pothole_model-7\weight
                     if now - last_post_times.get(det_type, 0) < 1.0:
                         continue
                     
-                    telemetry = BusTelemetryEvent(
+                    data_stream = BusDataStreamEvent(
                         bus_id=mock_bus_id,
                         timestamp=time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
                         location=LocationDatapoint(
@@ -159,7 +160,7 @@ def run_inference(model_path=r'runs\detect\runs\train\sih_pothole_model-7\weight
                         )
                     )
                     
-                    json_payload = telemetry.to_compact_json()
+                    json_payload = data_stream.to_compact_json()
                     last_post_times[det_type] = now
                     
                     try:
@@ -251,7 +252,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Run Dual Engine Edge Inference Prototype")
     parser.add_argument('--weights', type=str, default=r'runs\detect\runs\train\sih_pothole_model-7\weights\last.pt')
     parser.add_argument('--source', type=str, default='0', help="Camera index or video file")
-    parser.add_argument('--server', type=str, default='http://localhost:8000/api/v1/telemetry')
+    parser.add_argument('--server', type=str, default='http://localhost:8000/api/v1/data_stream')
     parser.add_argument('--gps', type=str, default=None, help="Serial port for hardware GPS (e.g., COM3, /dev/ttyUSB0)")
     args = parser.parse_args()
     

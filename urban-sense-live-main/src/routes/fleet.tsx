@@ -136,7 +136,7 @@ function FleetPage() {
           <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
             <CameraFeed busId={bus.id} compact />
             <div className="panel p-4">
-              <h3 className="text-sm font-semibold tracking-wide uppercase">Unit Telemetry</h3>
+              <h3 className="text-sm font-semibold tracking-wide uppercase">Unit DataStream</h3>
               <div className="mt-3 grid grid-cols-2 gap-3">
                 {[
                   { icon: Gauge, label: "Speed", value: `${bus.speed} km/h` },
